@@ -1,0 +1,5 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "username": "yo-renovate[bot]",
+  "gitAuthor": "yo-renovate <147074833+yo-renovate[bot]@users.noreply.github.com>"
+}

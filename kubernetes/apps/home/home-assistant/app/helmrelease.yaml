@@ -1,0 +1,97 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: home-assistant
+  namespace: home
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 1.5.1
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s-charts
+        namespace: flux-system
+  maxHistory: 2
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    initContainers:
+      01-init-db:
+        image: ghcr.io/onedr0p/postgres-init:14.9
+        imagePullPolicy: IfNotPresent
+        envFrom:
+          - secretRef:
+              name: home-assistant-secret
+    controller:
+      annotations:
+        reloader.stakater.com/auto: "true"
+    image:
+      repository: ghcr.io/onedr0p/home-assistant
+      tag: 2023.9.3@sha256:d6e4c153f71b544e0e216706beda9511e106d535f96a0fce75500efa7cbee01d
+    env:
+      TZ: ${TIMEZONE}
+      HASS_UNIT_SYSTEM: imperial
+      HASS_PURGE_KEEP_DAYS: 30
+      HASS_EXTERNAL_URL: https://hass.${PUBLIC_DOMAIN}
+      HASS_TRUSTED_PROXIES: ${CLUSTER_POD_IP_CIDR}
+    envFrom:
+      - secretRef:
+          name: home-assistant-secret
+    service:
+      main:
+        ports:
+          http:
+            port: 8123
+    ingress:
+      main:
+        enabled: true
+        ingressClassName: nginx
+        annotations:
+          hajimari.io/icon: mdi:home-assistant
+        hosts:
+          - host: &host hass.${PUBLIC_DOMAIN}
+            paths:
+              - path: /
+                pathType: Prefix
+        tls:
+          - hosts:
+              - *host
+    probes:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false
+      startup:
+        enabled: false
+    podSecurityContext:
+      runAsUser: 568
+      runAsGroup: 568
+      fsGroup: 568
+      fsGroupChangePolicy: OnRootMismatch
+    podAnnotations:
+      k8s.v1.cni.cncf.io/networks: |
+        [{
+          "name": "multus-iot",
+          "namespace": "networking",
+          "ips": ["192.168.99.254/24"]
+        }]
+    persistence:
+      config:
+        enabled: true
+        existingClaim: home-assistant-config
+    resources:
+      requests:
+        cpu: 10m
+        memory: 100Mi
+      limits:
+        memory: 750Mi

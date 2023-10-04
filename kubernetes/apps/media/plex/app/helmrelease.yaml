@@ -1,0 +1,83 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: plex
+  namespace: media
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 1.5.1
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s-charts
+        namespace: flux-system
+  maxHistory: 2
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    image:
+      repository: ghcr.io/onedr0p/plex-beta
+      tag: 1.32.7.7571-13cdc68dc@sha256:a9474ff865f654cee7069357ce52469ab2929abdc1133568ba07b5fe83d09e9f
+    env:
+      TZ: ${TIMEZONE}
+    service:
+      main:
+        ports:
+          http:
+            port: 32400
+    ingress:
+      main:
+        enabled: true
+        ingressClassName: nginx
+        annotations:
+          hajimari.io/icon: mdi:plex
+          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+          external-dns.alpha.kubernetes.io/target: ingress.${PUBLIC_DOMAIN}
+        hosts:
+          - host: &host plex.${PUBLIC_DOMAIN}
+            paths:
+              - path: /
+                pathType: Prefix
+        tls:
+          - hosts:
+              - *host
+    podSecurityContext:
+      runAsUser: 568
+      runAsGroup: 568
+      fsGroup: 568
+      fsGroupChangePolicy: OnRootMismatch
+      supplementalGroups: [44, 109, 10000]
+    persistence:
+      config:
+        enabled: true
+        existingClaim: plex-config
+      tmp:
+        enabled: true
+        type: emptyDir
+      transcode:
+        enabled: true
+        type: emptyDir
+      media:
+        enabled: true
+        existingClaim: media
+        readOnly: true
+    nodeSelector:
+      intel.feature.node.kubernetes.io/gpu: "true"
+    resources:
+      requests:
+        gpu.intel.com/i915: 1
+        cpu: 100m
+        memory: 2000Mi
+      limits:
+        gpu.intel.com/i915: 1
+        memory: 10000Mi

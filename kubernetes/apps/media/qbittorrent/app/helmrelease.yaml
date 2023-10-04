@@ -1,0 +1,130 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: qbittorrent
+  namespace: media
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 1.5.1
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s-charts
+        namespace: flux-system
+  maxHistory: 2
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    controller:
+      annotations:
+        configmap.reloader.stakater.com/reload: qbittorrent-scripts
+        secret.reloader.stakater.com/reload: cross-seed-secret
+    image:
+      repository: ghcr.io/onedr0p/qbittorrent
+      tag: 4.5.5@sha256:30dffe7ad04ea0e39db0b50c0bd5e79362f99f7ff6b250526d2f389b58d96f14
+    env:
+      TZ: ${TIMEZONE}
+      QBITTORRENT__PORT: &http-port 8080
+      QBITTORRENT__BT_PORT: &bt-port ${TORRENT_PUBLIC_PORT}
+      QBT_Application__MemoryWorkingSetLimit: 16384
+      QBT_BitTorrent__Session__Interface: eth0
+      QBT_BitTorrent__Session__InterfaceName: eth0
+      QBT_BitTorrent__Session__InterfaceAddress:
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+      QBT_Preferences__WebUI__AuthSubnetWhitelistEnabled: true
+      QBT_Preferences__WebUI__AuthSubnetWhitelist: |-
+        ${CLUSTER_POD_IP_CIDR}, ${LAN_SERVER_IP_CIDR}
+    service:
+      main:
+        ports:
+          http:
+            port: *http-port
+          xseed:
+            port: 2468
+      bittorrent:
+        enabled: true
+        type: LoadBalancer
+        annotations:
+          io.cilium/lb-ipam-ips: ${TORRENT_LB_IP}
+        labels:
+          io.cilium/lb-ipam-layer2: "true"
+        ports:
+          bittorrent-tcp:
+            enabled: true
+            port: *bt-port
+            protocol: TCP
+    ingress:
+      main:
+        enabled: true
+        ingressClassName: nginx
+        annotations:
+          hajimari.io/icon: mdi:seedling
+        hosts:
+          - host: &host torrent.${PUBLIC_DOMAIN}
+            paths:
+              - path: /
+                pathType: Prefix
+        tls:
+          - hosts:
+              - *host
+    podSecurityContext:
+      runAsUser: 568
+      runAsGroup: 568
+      fsGroup: 568
+      fsGroupChangePolicy: OnRootMismatch
+      supplementalGroups: [10000]
+    persistence:
+      config:
+        enabled: true
+        existingClaim: qbittorrent-config
+      media:
+        enabled: true
+        existingClaim: media
+      scripts:
+        enabled: true
+        type: configMap
+        name: qbittorrent-scripts
+        mountPath: /scripts/xseed.sh
+        subPath: xseed.sh
+        defaultMode: 0775
+        readOnly: true
+      xseed:
+        enabled: true
+        type: secret
+        name: cross-seed-secret
+        mountPath: /config/config.js
+        subPath: config.js
+        readOnly: true
+    resources:
+      requests:
+        memory: 250Mi
+        cpu: 25m
+      limits:
+        memory: 32000Mi
+    sidecars:
+      xseed:
+        image: ghcr.io/cross-seed/cross-seed:5.5.4@sha256:cecc854fc906cdaf471feab507fd860dff62049da9fb32e83250c887b5da8c42
+        imagePullPolicy: IfNotPresent
+        args:
+          - daemon
+        volumeMounts:
+          - name: config
+            mountPath: /config
+          - name: xseed
+            mountPath: /config/config.js
+            subPath: config.js
+            readOnly: true
+          - name: media
+            mountPath: /media

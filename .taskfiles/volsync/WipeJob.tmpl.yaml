@@ -1,0 +1,25 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "wipe-${rsrc}-${claim}-${ts}"
+  namespace: "${namespace}"
+spec:
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: OnFailure
+      containers:
+        - name: wipe
+          image: ghcr.io/onedr0p/alpine:3.18.4@sha256:a45f246424c791487a44ba5cbe5720ae5318813dce3924c0e04d943e0fd0996d
+          command: ["/bin/bash", "-c", "cd /config; find . -delete"]
+          volumeMounts:
+            - name: config
+              mountPath: /config
+          securityContext:
+            privileged: true
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: "${claim}"

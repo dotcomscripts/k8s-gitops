@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: github-deploy-key
+  namespace: flux-system
+stringData:
+  identity: ENC[AES256_GCM,data:iyrT8QQnCCheQFUP53kfCR2PysIa5oQQ1A/ALcH9fuThEZsDGUs8D0e2jjjgH6oJUN/Yk3iGgmbG+eWarzZVT4A+dP8K/g8CdLi6lvfqadSD7KJedW8rBNZ+VI7crqzj9oQ/E7sp9/P7nwgwYx+mIoC/Zxk73O6pxzI7bCfrpFmPeDCP2sfEw+FRnzWp9iix3XUj+ofMS+Kd8C0WK9Ar3fAsNY9XSWR74Yj5WAs2eHE17kd5Pa0CQDvZExu+Wk5ruXwjQNW6aypC1Af4xOMq7QAWgX+mUdBLrI98PyScYP+Pd+SGoSoki8aDziRCxLiaWwjLXBOIIVmlPLF+/FUkHlHZsy7XSgzY9xrTQ4mQihRaZYxYLU2rmI1Vg4vZ/NURdJ6sqrw0vQEpgkg+s1HAuYZJt04nsQjagyY0yn7CBoz1m7TTrF7yYZmxqM3RSfn4T/gm15SdavLHK0UaSGo8chOvIu+kwrxk5Y9pNy+6i3Tg08tAvUHp0wpH3zYU1nqnQOMCMq2vT+9tbinfqvlR1sgN37fL9khDRVjTDEKaORuD9AM=,iv:FUZ5MpHNXc+pbKdTmW9FmAC2Fw53qbNlg0Q5TCqZy7U=,tag:8WCqWBFEx6JyyRuR3FGtxw==,type:str]
+  identity.pub: ENC[AES256_GCM,data:oxilzcR56M8Nbpmqw7PEVIfzf7JhIAVOXjAf4nbvwSi7X1BYjlQVH3KOu9yd3Pw/7XPmlaDXm1IBrJpnyxKBPNyBDiiPGLWgzhEHkd8lpKfmow0c6z1D5XmFhK2ieUcMv+pq8nJlJ9e6,iv:30a/8/P2uDsOLPnloI+kabjieiOr/dltEO8ty3olVE4=,tag:8tY7Z357wrZyULBRYdjFAg==,type:str]
+  known_hosts: ENC[AES256_GCM,data:/FbKcdKHvSqsJhHoNvgDQyFBJYBtC+e5dj+7pQRrQyP9T6Fg/oH01AJ2PA0/mlmY1XpOtRlDtWffdn8oIH1KuyJXyqf3MlSUBAVq5Bqb5z2VfDJug6xdtzQvPGHK3lsMKxQM36PJc1D21cRgPzm6angi7dmmlEqb6hVrcSw5KkH+SpT1hcFDjqFrlNdjxClZwtuvUqitqv/XUnhwwkEblU+qyoFesMKFUomTzQ==,iv:4AHVgm08n132ge1czrJqdiceApDwZmoZw2gZUrZTBeE=,tag:MAY1rqDit2Ut5nIb75VLQw==,type:str]
+sops:
+  kms: []
+  gcp_kms: []
+  azure_kv: []
+  hc_vault: []
+  age:
+    - recipient: age10fjy3uzq9dgvymzv7za4xnf6x04wwn8w3vy5eu93xj37ckq3zc2q2cks3t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBVU3d4NXZGajNtUWcrNk8y
+        MDNyUHluK3B6dk9wdnNBREhvblJwTU9ZU1RBCld2RzZUT0Rpdml1ZHc4UzgxZHcz
+        c2huU2pMandvU21tS3lTSUFoMVJrenMKLS0tIFBKc2pXZTQ0MjVLeWpWS25uamN1
+        VzBCUVBGQ0NVcUV0UXl0b1dsL2lMMk0Kjc6zfdkUyHMmuwyiwfgB43HKvBw+F9aQ
+        vTbDpIqcMk/HQkrPitTPSV3gJ7lqi4+fWXVfFrjjiAgew3JKShLnTg==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2023-10-04T20:33:12Z"
+  mac: ENC[AES256_GCM,data:Hr3/8kjj+5PkEgQSc5KEydqijZRSpYZ4JnBU3IHVQIzHGuHebri246Sc303IvxIPYfAyNWTK5/cna6nVJ5BQaMO1zE2nYWbolXRptR1kkIoDo+osC3uue4ouq6yhQS4lAcfTbQbcTlEu5Ly8wyOTCiPQtC9XEwW3DyOKbQWsB5k=,iv:oEqD8bFT4NK1zYOGBKKcdLzjYE4g8fYq2jEOh+tjzdM=,tag:PPa1QdTDOS1H6/QQ5tb0rw==,type:str]
+  pgp: []
+  encrypted_regex: ^(data|stringData)$
+  version: 3.8.0
