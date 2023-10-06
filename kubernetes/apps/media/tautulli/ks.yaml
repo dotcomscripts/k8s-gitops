@@ -7,10 +7,10 @@ metadata:
 spec:
   dependsOn:
     - name: cluster-apps-plex
-    # - name: cluster-apps-volsync
+    - name: cluster-apps-volsync
     - name: cluster-apps-smtp-relay
-    - name: cluster-apps-democratic-csi-local-hostpath
     - name: cluster-apps-external-secrets-stores
+    - name: cluster-apps-democratic-csi-local-hostpath
   path: ./kubernetes/apps/media/tautulli/app
   prune: true
   sourceRef:

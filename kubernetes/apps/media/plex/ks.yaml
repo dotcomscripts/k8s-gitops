@@ -6,11 +6,11 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    # - name: cluster-apps-volsync
+    - name: cluster-apps-volsync
     - name: cluster-apps-pvc-media
-    - name: cluster-apps-democratic-csi-local-hostpath
     - name: cluster-apps-external-secrets-stores
     - name: cluster-apps-intel-device-plugin-gpu
+    - name: cluster-apps-democratic-csi-local-hostpath
   path: ./kubernetes/apps/media/plex/app
   prune: true
   sourceRef:
