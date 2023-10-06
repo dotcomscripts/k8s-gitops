@@ -27,10 +27,5 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    args:
-      httpEndpoint: ":8080"
-      leaderElection: true
-      leaderElectionNamespace: "$(NAMESPACE)"
-      enable-distributed-snapshotting: true
     serviceMonitor:
       create: true
