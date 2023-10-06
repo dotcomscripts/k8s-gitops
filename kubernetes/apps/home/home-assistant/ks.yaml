@@ -6,11 +6,11 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    # - name: cluster-apps-volsync
+    - name: cluster-apps-volsync
     - name: cluster-apps-multus-configs
-    - name: cluster-apps-democratic-csi-local-hostpath
     - name: cluster-apps-cloudnative-pg-cluster
     - name: cluster-apps-external-secrets-stores
+    - name: cluster-apps-democratic-csi-local-hostpath
   path: ./kubernetes/apps/home/home-assistant/app
   prune: true
   sourceRef:
