@@ -32,6 +32,6 @@ spec:
       httpEndpoint: ":8080"
       leaderElection: true
       leaderElectionNamespace: "$(NAMESPACE)"
-      enable-distributed-snapshotting: true
+      enableDistributedSnapshotting: true
     serviceMonitor:
       create: true
