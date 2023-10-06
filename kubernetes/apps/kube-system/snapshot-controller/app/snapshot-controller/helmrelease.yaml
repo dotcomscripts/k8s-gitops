@@ -28,7 +28,6 @@ spec:
     keepHistory: false
   values:
     args:
-      v: 5
       httpEndpoint: ":8080"
       leaderElection: true
       leaderElectionNamespace: "$(NAMESPACE)"
