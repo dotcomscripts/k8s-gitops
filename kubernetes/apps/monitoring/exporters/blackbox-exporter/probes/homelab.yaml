@@ -13,5 +13,5 @@ spec:
       static:
         - unifi.${PUBLIC_DOMAIN}
         - nas.${PUBLIC_DOMAIN}
-        - ups.${PUBLIC_DOMAIN}
-        - pdu.${PUBLIC_DOMAIN}
+      #  - ups.${PUBLIC_DOMAIN}
+      #  - pdu.${PUBLIC_DOMAIN}
