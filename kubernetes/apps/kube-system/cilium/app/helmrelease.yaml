@@ -107,6 +107,7 @@ spec:
     localRedirectPolicy: true
     operator:
       enabled: true
+      replicas: 1
       rollOutPods: true
       prometheus:
         enabled: true
