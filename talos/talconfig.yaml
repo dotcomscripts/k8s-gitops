@@ -6,7 +6,7 @@ clusterPodNets:
 clusterSvcNets:
   - 10.245.0.0/16
 
-talosVersion: v1.5.3
+talosVersion: v1.5.4
 kubernetesVersion: 1.28.2
 endpoint: https://k8s.${domainName}:6443
 
@@ -106,7 +106,7 @@ controlPlane:
         extensions:
           - image: ghcr.io/siderolabs/i915-ucode:20230804
           - image: ghcr.io/siderolabs/intel-ucode:20230808
-          - image: ghcr.io/siderolabs/thunderbolt:v1.5.3
+          - image: ghcr.io/siderolabs/thunderbolt:v1.5.4
         legacyBIOSSupport: true
         extraKernelArgs:
           - talos.logging.kernel=udp://vector.${domainName}:6001/
