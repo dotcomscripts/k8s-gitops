@@ -11,6 +11,11 @@ module.exports = {
   torznab: [
     "http://prowlarr.media.svc.cluster.local:9696/1/api?apikey={{ .PROWLARR_API_KEY }}", // td
     "http://prowlarr.media.svc.cluster.local:9696/2/api?apikey={{ .PROWLARR_API_KEY }}", // fl
+    "http://prowlarr.media.svc.cluster.local:9696/3/api?apikey={{ .PROWLARR_API_KEY }}", // tl
+    "http://prowlarr.media.svc.cluster.local:9696/4/api?apikey={{ .PROWLARR_API_KEY }}", // bluT
+    "http://prowlarr.media.svc.cluster.local:9696/5/api?apikey={{ .PROWLARR_API_KEY }}", // st
+    "http://prowlarr.media.svc.cluster.local:9696/6/api?apikey={{ .PROWLARR_API_KEY }}", // HDT
+    "http://prowlarr.media.svc.cluster.local:9696/7/api?apikey={{ .PROWLARR_API_KEY }}", // TS
   ],
 
   action: "inject",
