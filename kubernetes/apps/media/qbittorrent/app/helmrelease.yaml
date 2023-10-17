@@ -45,7 +45,7 @@ spec:
             fieldPath: status.podIP
       QBT_Preferences__WebUI__AuthSubnetWhitelistEnabled: true
       QBT_Preferences__WebUI__AuthSubnetWhitelist: |-
-        ${CLUSTER_POD_IP_CIDR}, ${LAN_SERVER_IP_CIDR}
+        ${CLUSTER_POD_IP_CIDR}, ${LAN_INTERNAL_IP_CIDR}
     service:
       main:
         ports:

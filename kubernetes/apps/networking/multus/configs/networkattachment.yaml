@@ -12,7 +12,7 @@ spec:
       "plugins": [
         {
           "type": "macvlan",
-          "master": "bond0.2",
+          "master": "bond0.99",
           "mode": "bridge",
           "capabilities": {
             "ips": true
@@ -20,9 +20,10 @@ spec:
           "ipam": {
             "type": "static",
             "routes": [
-              { "dst": "${LAN_TRUSTED_IP_CIDR}", "gw": "192.168.2.1" },
-              { "dst": "${LAN_SERVER_IP_CIDR}", "gw": "192.168.2.1" },
-              { "dst": "${LAN_IOT_IP_CIDR}", "gw": "192.168.2.1" }
+              { "dst": "${LAN_INTERNAL_IP_CIDR}", "gw": "${LAN_IOT_GATEWAY_IP}" },
+              { "dst": "${LAN_VM_IP_CIDR}", "gw": "${LAN_IOT_GATEWAY_IP}" },
+              { "dst": "${LAN_IOT_IP_CIDR}", "gw": "${LAN_IOT_GATEWAY_IP}" },
+              { "dst": "${LAN_SERVICES_IP_CIDR}", "gw": "${LAN_IOT_GATEWAY_IP}" }
             ]
           }
         }

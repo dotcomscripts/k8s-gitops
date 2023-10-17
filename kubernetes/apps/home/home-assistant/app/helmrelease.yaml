@@ -83,7 +83,7 @@ spec:
         [{
           "name": "multus-iot",
           "namespace": "networking",
-          "ips": ["192.168.2.254/24"]
+          "ips": ["192.168.99.254/24"]
         }]
     persistence:
       config:
