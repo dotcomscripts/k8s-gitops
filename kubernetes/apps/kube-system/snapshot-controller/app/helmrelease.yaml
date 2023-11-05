@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: snapshot-controller
-      version: 1.9.2
+      version: 2.0.0
       sourceRef:
         kind: HelmRepository
         name: piraeus-charts
@@ -27,10 +27,6 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    args:
-      httpEndpoint: ":8080"
-      leaderElection: true
-      leaderElectionNamespace: "$(NAMESPACE)"
-      enableDistributedSnapshotting: true
-    serviceMonitor:
-      create: true
+    controller:
+      serviceMonitor:
+        create: true
