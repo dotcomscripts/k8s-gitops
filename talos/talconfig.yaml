@@ -107,7 +107,7 @@ controlPlane:
         extensions:
           - image: ghcr.io/siderolabs/i915-ucode:20230804
           - image: ghcr.io/siderolabs/intel-ucode:20230808
-          - image: ghcr.io/siderolabs/thunderbolt:v1.5.4
+          - image: ghcr.io/siderolabs/thunderbolt:v1.5.5
         legacyBIOSSupport: true
         extraKernelArgs:
           - talos.logging.kernel=udp://vector.${domainName}:6001/
