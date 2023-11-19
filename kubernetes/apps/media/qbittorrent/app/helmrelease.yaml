@@ -115,7 +115,7 @@ spec:
         memory: 32000Mi
     sidecars:
       xseed:
-        image: ghcr.io/cross-seed/cross-seed:5.8.1@sha256:df7a8183bd246c364d6cef6260cfcd4ef1fa5a77155f7363a96ae3b0500e6251
+        image: ghcr.io/cross-seed/cross-seed:5.8.2@sha256:b2ea78f9e347320b479657fadd4fcdd59ef24085c4a44db46a53f47301423744
         imagePullPolicy: IfNotPresent
         args:
           - daemon
