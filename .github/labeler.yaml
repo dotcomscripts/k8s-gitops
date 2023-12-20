@@ -5,6 +5,9 @@ area/github:
 area/kubernetes:
   - changed-files:
       - any-glob-to-any-file: kubernetes/**/*
-area/hack:
+area/talos:
   - changed-files:
-      - any-glob-to-any-file: hack/**/*
+      - any-glob-to-any-file: talos/**/*
+area/taskfiles:
+  - changed-files:
+      - any-glob-to-any-file: .taskfiles/**/*
