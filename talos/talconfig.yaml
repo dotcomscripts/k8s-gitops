@@ -26,8 +26,7 @@ nodes:
     installDiskSelector:
       serial: S465NB0K748379B
     machineDisks:
-      - device: /dev/disk/by-id/ata-CT4000MX599SSD1-2336E873A309
-    # - device: /dev/disk/by-id/ata-CT500MX500SSD1_1825E14523DD
+      - device: /dev/disk/by-id/ata-CT4000MX500SSD1_2336E873A309
         partitions:
           - mountpoint: /var/mnt/sata
     controlPlane: true
