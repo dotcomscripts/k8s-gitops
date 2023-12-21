@@ -3,30 +3,41 @@ apiVersion: upgrade.cattle.io/v1
 kind: Plan
 metadata:
   name: talos
-  namespace: kube-system
-  annotations:
-    kustomize.toolkit.fluxcd.io/substitute: disabled
 spec:
-  # renovate: datasource=github-releases depName=siderolabs/talos
+  # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
   version: v1.6.0
-  serviceAccountName: kube-system
+  serviceAccountName: system-upgrade
   secrets:
     - name: talos
       path: /var/run/secrets/talos.dev
+      ignoreUpdates: true
   concurrency: 1
+  exclusive: true
   nodeSelector:
     matchExpressions:
-      - { key: kubernetes.io/os, operator: In, values: [linux] }
-  upgrade:
-    image: ghcr.io/siderolabs/talosctl
-    envs:
+      - key: kubernetes.io/os
+        operator: In
+        values:
+          - linux
+  prepare:
+    image: &image ghcr.io/siderolabs/talosctl
+    envs: &envs
       - name: NODE_IP
         valueFrom:
           fieldRef:
             fieldPath: status.hostIP
+      - name: IMAGE_SCHEMATIC
+        value: f92cecb9f6acede2470b58eda86b66f51277ebf7aea88db6bd5a8b996e9ae9e2
     args:
-      - "--nodes=$(NODE_IP)"
-      - "upgrade"
-      - "--image=ghcr.io/siderolabs/installer:$(SYSTEM_UPGRADE_PLAN_LATEST_VERSION)"
-      - "--preserve=true"
-      - "--wait=false"
+      - --nodes=$(NODE_IP)
+      - health
+      - --server=false
+  upgrade:
+    image: *image
+    envs: *envs
+    args:
+      - --nodes=$(NODE_IP)
+      - upgrade
+      - --image=factory.talos.dev/installer/$(IMAGE_SCHEMATIC):$(SYSTEM_UPGRADE_PLAN_LATEST_VERSION)
+      - --preserve=true
+      - --wait=false
