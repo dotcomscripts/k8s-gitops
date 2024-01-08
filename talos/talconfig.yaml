@@ -110,6 +110,7 @@ controlPlane:
           - image: ghcr.io/siderolabs/thunderbolt:v1.5.5
         legacyBIOSSupport: true
         extraKernelArgs:
+          - mitigations=off
           - talos.logging.kernel=udp://vector.${domainName}:6001/
       features:
         kubePrism:
