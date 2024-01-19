@@ -4,7 +4,7 @@ kind: Plan
 metadata:
   name: talos
 spec:
-  # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
+  # renovate: datasource=github-releases depName=siderolabs/talos
   version: v1.6.1
   serviceAccountName: system-upgrade
   secrets:
@@ -19,22 +19,21 @@ spec:
         operator: In
         values:
           - linux
-  prepare:
-    image: &image ghcr.io/siderolabs/talosctl
-    envs: &envs
+  prepare: &prepare
+    image: ghcr.io/siderolabs/talosctl
+    envs:
       - name: NODE_IP
         valueFrom:
           fieldRef:
             fieldPath: status.hostIP
       - name: IMAGE_SCHEMATIC
-        value: f92cecb9f6acede2470b58eda86b66f51277ebf7aea88db6bd5a8b996e9ae9e2
+        value: 32ae5573011296d08d26d072bfe1b3d7d46f2f44990fbe0809e790a4ab3f5917
     args:
       - --nodes=$(NODE_IP)
       - health
       - --server=false
   upgrade:
-    image: *image
-    envs: *envs
+    <<: *prepare
     args:
       - --nodes=$(NODE_IP)
       - upgrade

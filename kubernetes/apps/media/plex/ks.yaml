@@ -5,9 +5,9 @@ metadata:
   name: cluster-apps-plex
   namespace: flux-system
 spec:
+  targetNamespace: media
   dependsOn:
     - name: cluster-apps-volsync
-    - name: cluster-apps-pvc-media
     - name: cluster-apps-external-secrets-stores
     - name: cluster-apps-intel-device-plugin-gpu
     - name: cluster-apps-democratic-csi-local-hostpath
@@ -27,6 +27,7 @@ metadata:
   name: cluster-apps-plex-tools
   namespace: flux-system
 spec:
+  targetNamespace: media
   dependsOn:
     - name: cluster-apps-plex
   path: ./kubernetes/apps/media/plex/tools

@@ -5,6 +5,7 @@ metadata:
   name: cluster-apps-snmp-exporter-synology-nas
   namespace: flux-system
 spec:
+  targetNamespace: monitoring
   path: ./kubernetes/apps/monitoring/exporters/snmp-exporter/synology-nas
   prune: true
   sourceRef:

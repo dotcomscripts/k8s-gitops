@@ -2,19 +2,17 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
-  name: plex
-  namespace: media
+  name: &app plex
 spec:
   interval: 30m
   chart:
     spec:
       chart: app-template
-      version: 1.5.1
+      version: 2.5.0
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
         namespace: flux-system
-  maxHistory: 2
   install:
     remediation:
       retries: 3
@@ -25,59 +23,89 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    image:
-      repository: ghcr.io/onedr0p/plex-beta
-      tag: 1.40.0.7775-456fbaf97@sha256:cd6bafd8cf9f75c2d5b6517de312a82a986049f89f089da74b6bdb23928b8b37
-    env:
-      TZ: ${TIMEZONE}
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              repository: ghcr.io/onedr0p/plex-beta
+              tag: 1.40.0.7775-456fbaf97@sha256:cd6bafd8cf9f75c2d5b6517de312a82a986049f89f089da74b6bdb23928b8b37
+            env:
+              TZ: ${TIMEZONE}
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: &path /identity
+                    port: &port 32400
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
+              startup:
+                enabled: false
+            resources:
+              requests:
+                gpu.intel.com/i915: 1
+              limits:
+                gpu.intel.com/i915: 1
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+        pod:
+          nodeSelector:
+            intel.feature.node.kubernetes.io/gpu: "true"
+          securityContext:
+            runAsUser: 568
+            runAsGroup: 568
+            runAsNonRoot: true
+            fsGroup: 568
+            fsGroupChangePolicy: OnRootMismatch
+            supplementalGroups:
+              - 44
+              - 65537
+    ingress:
+      main:
+        enabled: true
+        className: external
+        annotations:
+          gatus.io/enabled: "true"
+          gatus.io/path: *path
+          hajimari.io/icon: mdi:plex
+          nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+          external-dns.alpha.kubernetes.io/target: external.${PUBLIC_DOMAIN}
+        hosts:
+          - host: &host "{{ .Release.Name }}.${PUBLIC_DOMAIN}"
+            paths:
+              - path: /
+                service:
+                  name: main
+                  port: http
+        tls:
+          - hosts:
+              - *host
+    persistence:
+      config:
+        enabled: true
+        existingClaim: *app
+      media:
+        type: nfs
+        server: nas.${PUBLIC_DOMAIN}
+        path: /volume1/PLEX
+        globalMounts:
+          - readOnly: true
+      transcode:
+        type: emptyDir
+      tmp:
+        type: emptyDir
     service:
       main:
         ports:
           http:
-            port: 32400
-    ingress:
-      main:
-        enabled: true
-        ingressClassName: nginx
-        annotations:
-          hajimari.io/icon: mdi:plex
-          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-          external-dns.alpha.kubernetes.io/target: ingress.${PUBLIC_DOMAIN}
-        hosts:
-          - host: &host plex.${PUBLIC_DOMAIN}
-            paths:
-              - path: /
-                pathType: Prefix
-        tls:
-          - hosts:
-              - *host
-    podSecurityContext:
-      runAsUser: 568
-      runAsGroup: 568
-      fsGroup: 568
-      fsGroupChangePolicy: OnRootMismatch
-      supplementalGroups: [44, 109, 10000]
-    persistence:
-      config:
-        enabled: true
-        existingClaim: plex-config
-      tmp:
-        enabled: true
-        type: emptyDir
-      transcode:
-        enabled: true
-        type: emptyDir
-      media:
-        enabled: true
-        existingClaim: media
-        readOnly: true
-    nodeSelector:
-      intel.feature.node.kubernetes.io/gpu: "true"
-    resources:
-      requests:
-        gpu.intel.com/i915: 1
-        cpu: 100m
-        memory: 2000Mi
-      limits:
-        gpu.intel.com/i915: 1
-        memory: 10000Mi
+            port: *port

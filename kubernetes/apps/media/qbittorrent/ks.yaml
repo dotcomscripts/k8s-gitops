@@ -5,9 +5,9 @@ metadata:
   name: cluster-apps-qbittorrent
   namespace: flux-system
 spec:
+  targetNamespace: media
   dependsOn:
     - name: cluster-apps-volsync
-    - name: cluster-apps-pvc-media
     - name: cluster-apps-external-secrets-stores
     - name: cluster-apps-democratic-csi-local-hostpath
   path: ./kubernetes/apps/media/qbittorrent/app
@@ -26,6 +26,7 @@ metadata:
   name: cluster-apps-qbittorrent-tools
   namespace: flux-system
 spec:
+  targetNamespace: media
   dependsOn:
     - name: cluster-apps-qbittorrent
   path: ./kubernetes/apps/media/qbittorrent/tools

@@ -2,19 +2,17 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
-  name: home-assistant
-  namespace: home
+  name: &app home-assistant
 spec:
   interval: 30m
   chart:
     spec:
       chart: app-template
-      version: 1.5.1
+      version: 2.5.0
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
         namespace: flux-system
-  maxHistory: 2
   install:
     remediation:
       retries: 3
@@ -25,73 +23,85 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    initContainers:
-      01-init-db:
-        image: ghcr.io/onedr0p/postgres-init:16.1
-        imagePullPolicy: IfNotPresent
-        envFrom:
-          - secretRef:
-              name: home-assistant-secret
-    controller:
-      annotations:
-        reloader.stakater.com/auto: "true"
-    image:
-      repository: ghcr.io/onedr0p/home-assistant
-      tag: 2024.1.3@sha256:f1adaefd28f877f6377487d6c4e7d7daf01db73bfcad8379314ab507b84a6666
-    env:
-      TZ: ${TIMEZONE}
-      HASS_UNIT_SYSTEM: imperial
-      HASS_PURGE_KEEP_DAYS: 30
-      HASS_EXTERNAL_URL: https://hass.${PUBLIC_DOMAIN}
-      HASS_TRUSTED_PROXIES: ${CLUSTER_POD_IP_CIDR}
-    envFrom:
-      - secretRef:
-          name: home-assistant-secret
+    controllers:
+      main:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        initContainers:
+          init-db:
+            image:
+              repository: ghcr.io/onedr0p/postgres-init
+              tag: 16
+            envFrom: &envFrom
+              - secretRef:
+                  name: home-assistant-secret
+        containers:
+          main:
+            image:
+              repository: ghcr.io/onedr0p/home-assistant
+              tag: 2024.1.3@sha256:f1adaefd28f877f6377487d6c4e7d7daf01db73bfcad8379314ab507b84a6666
+            env:
+              TZ: ${TIMEZONE}
+              HASS_UNIT_SYSTEM: imperial
+              HASS_PURGE_KEEP_DAYS: 30
+              HASS_EXTERNAL_URL: https://hass.${PUBLIC_DOMAIN}
+              HASS_TRUSTED_PROXIES: ${CLUSTER_POD_IP_CIDR}
+            envFrom: *envFrom
+            probes:
+              liveness:
+                enabled: false
+              readiness:
+                enabled: false
+              startup:
+                enabled: false
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+        pod:
+          annotations:
+            k8s.v1.cni.cncf.io/networks: |
+              [{
+                "name": "multus-iot",
+                "namespace": "networking",
+                "ips": ["192.168.99.254/24"]
+              }]
+          securityContext:
+            runAsUser: 568
+            runAsGroup: 568
+            runAsNonRoot: true
+            fsGroup: 568
+            fsGroupChangePolicy: OnRootMismatch
+    ingress:
+      main:
+        enabled: true
+        className: internal
+        annotations:
+          hajimari.io/icon: mdi:home-assistant
+          hajimari.io/url: https://hass.${PUBLIC_DOMAIN}
+        hosts:
+          - host: &host "{{ .Release.Name }}.${PUBLIC_DOMAIN}"
+            paths: &paths
+              - path: /
+                service:
+                  name: main
+                  port: http
+          - host: &customHost hass.${PUBLIC_DOMAIN}
+            paths: *paths
+        tls:
+          - hosts:
+              - *host
+              - *customHost
+    persistence:
+      config:
+        enabled: true
+        existingClaim: *app
+      tmp:
+        type: emptyDir
     service:
       main:
         ports:
           http:
             port: 8123
-    ingress:
-      main:
-        enabled: true
-        ingressClassName: nginx
-        annotations:
-          hajimari.io/icon: mdi:home-assistant
-        hosts:
-          - host: &host hass.${PUBLIC_DOMAIN}
-            paths:
-              - path: /
-                pathType: Prefix
-        tls:
-          - hosts:
-              - *host
-    probes:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
-      startup:
-        enabled: false
-    podSecurityContext:
-      runAsUser: 568
-      runAsGroup: 568
-      fsGroup: 568
-      fsGroupChangePolicy: OnRootMismatch
-    podAnnotations:
-      k8s.v1.cni.cncf.io/networks: |
-        [{
-          "name": "multus-iot",
-          "namespace": "networking",
-          "ips": ["192.168.99.254/24"]
-        }]
-    persistence:
-      config:
-        enabled: true
-        existingClaim: home-assistant-config
-    resources:
-      requests:
-        cpu: 10m
-        memory: 100Mi
-      limits:
-        memory: 750Mi

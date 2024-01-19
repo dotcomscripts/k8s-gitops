@@ -3,7 +3,6 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
   name: k8s-gitops
-  namespace: actions-runner-system
 spec:
   interval: 30m
   chart:
@@ -14,7 +13,6 @@ spec:
         kind: HelmRepository
         name: actions-runner-controller-charts
         namespace: flux-system
-  maxHistory: 2
   install:
     remediation:
       retries: 3
@@ -44,13 +42,13 @@ spec:
   valuesFrom:
     - kind: Secret
       name: actions-runner-controller-secret
-      valuesKey: github_app_id
+      valuesKey: ACTION_RUNNER_CONTROLLER_GITHUB_APP_ID
       targetPath: githubConfigSecret.github_app_id
     - kind: Secret
       name: actions-runner-controller-secret
-      valuesKey: github_app_installation_id
+      valuesKey: ACTION_RUNNER_CONTROLLER_GITHUB_INSTALLATION_ID
       targetPath: githubConfigSecret.github_app_installation_id
     - kind: Secret
       name: actions-runner-controller-secret
-      valuesKey: github_app_private_key
+      valuesKey: ACTION_RUNNER_CONTROLLER_GITHUB_PRIVATE_KEY
       targetPath: githubConfigSecret.github_app_private_key

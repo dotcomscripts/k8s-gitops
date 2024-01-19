@@ -9,6 +9,12 @@ route:
   receiver: pushover
   repeat_interval: 12h
   routes:
+    - receiver: heartbeat
+      group_wait: 0s
+      group_interval: 5m
+      repeat_interval: 5m
+      matchers:
+        - alertname =~ "Watchdog"
     - receiver: "null"
       matchers:
         - alertname =~ "InfoInhibitor"
@@ -25,6 +31,10 @@ inhibit_rules:
       - severity = "warning"
 
 receivers:
+  - name: heartbeat
+    webhook_configs:
+      - send_resolved: true
+        url: "{{ .ALERTMANAGER_HEARTBEAT_URL }}"
   - name: "null"
   - name: pushover
     pushover_configs:
@@ -55,6 +65,8 @@ receivers:
         title: >-
           {{ "{{" }} .CommonLabels.alertname {{ "}}" }}
           [{{ "{{" }} .Status | toUpper {{ "}}" }}{{ "{{" }} if eq .Status "firing" {{ "}}" }}:{{ "{{" }} .Alerts.Firing | len {{ "}}" }}{{ "{{" }} end {{ "}}" }}]
-        token: "{{ .PUSHOVER_TOKEN }}"
+        token: "{{ .ALERTMANAGER_PUSHOVER_APP_TOKEN }}"
+        # TODO: https://github.com/prometheus/alertmanager/pull/3474
+        # ttl: "{{ .ALERTMANAGER_PUSHOVER_TTL }}"
         url_title: View in Alertmanager
-        user_key: "{{ .PUSHOVER_USER_KEY }}"
+        user_key: "{{ .ALERTMANAGER_PUSHOVER_USER_KEY }}"

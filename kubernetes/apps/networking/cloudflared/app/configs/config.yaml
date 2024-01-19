@@ -1,16 +1,10 @@
 ---
 originRequest:
-  http2Origin: true
+  originServerName: external.${PUBLIC_DOMAIN}
 
 ingress:
   - hostname: ${PUBLIC_DOMAIN}
-    service: https://ingress-nginx-controller.networking.svc.cluster.local:443
-    originRequest:
-      originServerName: ingress.${PUBLIC_DOMAIN}
-
+    service: https://nginx-external-controller.networking.svc.cluster.local:443
   - hostname: "*.${PUBLIC_DOMAIN}"
-    service: https://ingress-nginx-controller.networking.svc.cluster.local:443
-    originRequest:
-      originServerName: ingress.${PUBLIC_DOMAIN}
-
+    service: https://nginx-external-controller.networking.svc.cluster.local:443
   - service: http_status:404

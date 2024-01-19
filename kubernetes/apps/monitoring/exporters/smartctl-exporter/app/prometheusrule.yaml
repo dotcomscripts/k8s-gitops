@@ -3,7 +3,6 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: smartctl-exporter-rules
-  namespace: monitoring
 spec:
   groups:
     - name: smartctl-exporter.rules
@@ -41,7 +40,7 @@ spec:
           labels:
             severity: critical
         #
-        # https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus-smartctl-exporter/rules/rules.txt
+        # Ref: https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus-smartctl-exporter/rules/rules.txt
         #
         - alert: SmartDeviceMediaErrors
           annotations:

@@ -3,7 +3,6 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
   name: kube-prometheus-stack
-  namespace: monitoring
 spec:
   interval: 30m
   timeout: 15m
@@ -15,7 +14,6 @@ spec:
         kind: HelmRepository
         name: prometheus-community-charts
         namespace: flux-system
-  maxHistory: 2
   install:
     crds: CreateReplace
     remediation:
@@ -32,17 +30,18 @@ spec:
     alertmanager:
       ingress:
         enabled: true
-        ingressClassName: nginx
+        ingressClassName: internal
         annotations:
           hajimari.io/appName: Alertmanager
           hajimari.io/icon: fluent:alert-16-filled
         hosts:
-          - &am-host am.${PUBLIC_DOMAIN}
+          - &host am.${PUBLIC_DOMAIN}
         paths:
           - /
+        pathType: Prefix
         tls:
           - hosts:
-              - *am-host
+              - *host
       alertmanagerSpec:
         replicas: 1
         useExistingSecret: true
@@ -55,30 +54,6 @@ spec:
               resources:
                 requests:
                   storage: 1Gi
-    grafana:
-      enabled: false
-      forceDeployDashboards: true
-      sidecar:
-        dashboards:
-          multicluster:
-            etcd:
-              enabled: true
-    kubeStateMetrics:
-      enabled: true
-    kube-state-metrics:
-      metricLabelsAllowlist:
-        - "pods=[*]"
-        - "deployments=[*]"
-        - "persistentvolumeclaims=[*]"
-      prometheus:
-        monitor:
-          enabled: true
-          relabelings:
-            - action: replace
-              regex: (.*)
-              replacement: $1
-              sourceLabels: ["__meta_kubernetes_pod_node_name"]
-              targetLabel: kubernetes_node
     kubelet:
       enabled: true
       serviceMonitor:
@@ -89,36 +64,28 @@ spec:
     kubeApiServer:
       enabled: true
     kubeControllerManager:
-      enabled: true
-      endpoints: &cp
-        - 10.0.5.2
+      enabled: false
     kubeEtcd:
-      enabled: true
-      endpoints: *cp
+      enabled: false
     kubeProxy:
       enabled: false
-      endpoints: *cp
     kubeScheduler:
-      enabled: true
-      endpoints: *cp
+      enabled: false
     prometheus:
       ingress:
         enabled: true
-        ingressClassName: nginx
+        ingressClassName: internal
         annotations:
           hajimari.io/appName: Prometheus
           hajimari.io/icon: simple-icons:prometheus
         hosts:
-          - &prometheus-host prometheus.${PUBLIC_DOMAIN}
+          - &host prometheus.${PUBLIC_DOMAIN}
         paths:
           - /
+        pathType: Prefix
         tls:
           - hosts:
-              - *prometheus-host
-      thanosService:
-        enabled: false
-      thanosServiceMonitor:
-        enabled: false
+              - *host
       prometheusSpec:
         replicas: 1
         replicaExternalLabelName: __replica__
@@ -142,9 +109,45 @@ spec:
               resources:
                 requests:
                   storage: 20Gi
-        resources:
-          requests:
-            cpu: 150m
-            memory: 2000Mi
-          limits:
-            memory: 7000Mi
+    nodeExporter:
+      enabled: true
+    prometheus-node-exporter:
+      prometheus:
+        monitor:
+          enabled: true
+          relabelings:
+            - action: replace
+              regex: (.*)
+              replacement: $1
+              sourceLabels:
+                - __meta_kubernetes_pod_node_name
+              targetLabel: kubernetes_node
+    kubeStateMetrics:
+      enabled: true
+    kube-state-metrics:
+      metricLabelsAllowlist:
+        - pods=[*]
+        - deployments=[*]
+        - persistentvolumeclaims=[*]
+      prometheus:
+        monitor:
+          enabled: true
+          relabelings:
+            - action: replace
+              regex: (.*)
+              replacement: $1
+              sourceLabels:
+                - __meta_kubernetes_pod_node_name
+              targetLabel: kubernetes_node
+    grafana:
+      enabled: false
+      forceDeployDashboards: true
+      sidecar:
+        dashboards:
+          multicluster:
+            etcd:
+              enabled: true
+  valuesFrom:
+    - kind: ConfigMap
+      name: kube-state-metrics-configmap
+      valuesKey: kube-state-metrics.yaml

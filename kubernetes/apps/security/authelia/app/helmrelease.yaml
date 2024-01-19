@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 2.4.0
+      version: 2.5.0
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
@@ -51,12 +51,21 @@ spec:
               X_AUTHELIA_CONFIG: /config/configuration.yml
               X_AUTHELIA_CONFIG_FILTERS: expand-env
             envFrom: *envFrom
-            resources:
-              requests:
-                cpu: 5m
-                memory: 64M
-              limits:
-                memory: 128M
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: &path /api/health
+                    port: &port 9091
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
+              startup:
+                enabled: false
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -82,7 +91,9 @@ spec:
         className: external
         annotations:
           gatus.io/enabled: "true"
+          gatus.io/path: *path
           hajimari.io/icon: mdi:shield-account
+          hajimari.io/url: https://auth.${PUBLIC_DOMAIN}
           nginx.ingress.kubernetes.io/configuration-snippet: |
             add_header Cache-Control "no-store";
             add_header Pragma "no-cache";
@@ -115,7 +126,7 @@ spec:
       main:
         ports:
           http:
-            port: 9091
+            port: *port
           metrics:
             port: 8080
     serviceMonitor:

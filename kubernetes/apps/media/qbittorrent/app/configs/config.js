@@ -5,28 +5,29 @@
 // External program on finished: /scripts/xseed.sh "%F"
 
 module.exports = {
-  delay: 15,
+  delay: 20,
+  port: process.env.PORT || 2468,
   qbittorrentUrl: "http://localhost:8080",
 
   torznab: [
-    "http://prowlarr.media.svc.cluster.local:9696/1/api?apikey={{ .PROWLARR_API_KEY }}", // td
-    "http://prowlarr.media.svc.cluster.local:9696/2/api?apikey={{ .PROWLARR_API_KEY }}", // fl
-    "http://prowlarr.media.svc.cluster.local:9696/3/api?apikey={{ .PROWLARR_API_KEY }}", // tl
-    "http://prowlarr.media.svc.cluster.local:9696/4/api?apikey={{ .PROWLARR_API_KEY }}", // bluT
-    "http://prowlarr.media.svc.cluster.local:9696/5/api?apikey={{ .PROWLARR_API_KEY }}", // st
-    "http://prowlarr.media.svc.cluster.local:9696/6/api?apikey={{ .PROWLARR_API_KEY }}", // HDT
-    "http://prowlarr.media.svc.cluster.local:9696/7/api?apikey={{ .PROWLARR_API_KEY }}", // TS
+    `http://prowlarr.media.svc.cluster.local:9696/4/api?apikey=$${process.env.PROWLARR_API_KEY}`, // blu
+    `http://prowlarr.media.svc.cluster.local:9696/2/api?apikey=$${process.env.PROWLARR_API_KEY}`, // fl
+    `http://prowlarr.media.svc.cluster.local:9696/6/api?apikey=$${process.env.PROWLARR_API_KEY}`, // hdt
+    `http://prowlarr.media.svc.cluster.local:9696/5/api?apikey=$${process.env.PROWLARR_API_KEY}`, // st
+    `http://prowlarr.media.svc.cluster.local:9696/1/api?apikey=$${process.env.PROWLARR_API_KEY}`, // td
+    `http://prowlarr.media.svc.cluster.local:9696/3/api?apikey=$${process.env.PROWLARR_API_KEY}`, // tl
+    `http://prowlarr.media.svc.cluster.local:9696/7/api?apikey=$${process.env.PROWLARR_API_KEY}`, // ts
   ],
 
+  apiAuth: false,
   action: "inject",
-  includeEpisodes: true,
-  includeNonVideos: true,
-  duplicateCategories: true,
-
   matchMode: "safe",
   skipRecheck: true,
-  linkType: "hardlink",
-  linkDir: "/media/downloads/torrents/complete/xseed",
+  duplicateCategories: true,
+
+  includeNonVideos: true,
+  includeEpisodes: true,
+  includeSingleEpisodes: true,
 
   // I have sonarr, radarr, and manual categories set in qBittorrent
   // The save paths for them are set to the following:
@@ -35,6 +36,9 @@ module.exports = {
     "/media/downloads/torrents/complete/radarr",
     "/media/downloads/torrents/complete/manual",
   ],
+
+  linkType: "hardlink",
+  linkDir: "/media/downloads/torrents/complete/xseed",
 
   outputDir: "/config/xseed",
   torrentDir: "/config/qBittorrent/BT_backup",

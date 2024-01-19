@@ -9,9 +9,9 @@ resources:
   - ./bjw-s-charts.yaml
   - ./cilium-charts.yaml
   - ./cloudnative-pg-charts.yaml
+  - ./coredns-charts.yaml
   - ./deliveryhero-charts.yaml
   - ./democratic-csi-charts.yaml
-  - ./external-dns-charts.yaml
   - ./external-secrets-charts.yaml
   - ./fairwinds-charts.yaml
   - ./grafana-charts.yaml
@@ -21,12 +21,10 @@ resources:
   - ./jetstack-charts.yaml
   - ./kubernetes-sigs-descheduler-charts.yaml
   - ./kyverno-charts.yaml
-  - ./lwolf-charts.yaml
   - ./metrics-server-charts.yaml
   - ./node-feature-discovery-charts.yaml
   - ./piraeus-charts.yaml
   - ./postfinance-charts.yaml
   - ./prometheus-community-charts.yaml
-  - ./rook-ceph-charts.yaml
   - ./stakater-charts.yaml
   - ./weave-gitops-charts.yaml

@@ -2,19 +2,17 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
-  name: gatus
-  namespace: monitoring
+  name: &app gatus
 spec:
   interval: 30m
   chart:
     spec:
       chart: app-template
-      version: 1.5.1
+      version: 2.5.0
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
         namespace: flux-system
-  maxHistory: 2
   install:
     remediation:
       retries: 3
@@ -25,84 +23,129 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    initContainers:
-      01-init-db:
-        image: ghcr.io/onedr0p/postgres-init:16.1
-        imagePullPolicy: IfNotPresent
-        envFrom:
-          - secretRef:
-              name: gatus-secret
-    controller:
-      annotations:
-        reloader.stakater.com/auto: "true"
-    image:
-      repository: ghcr.io/twin/gatus
-      tag: v5.7.0
-    env:
-      TZ: ${TIMEZONE}
-      GATUS_CONFIG_PATH: /config
-      CUSTOM_WEB_PORT: &port 80
-    envFrom:
-      - secretRef:
-          name: gatus-secret
-    service:
+    controllers:
       main:
-        ports:
-          http:
-            port: *port
-    serviceMonitor:
-      main:
-        enabled: true
+        annotations:
+          reloader.stakater.com/auto: "true"
+        initContainers:
+          init-db:
+            order: 1
+            image:
+              repository: ghcr.io/onedr0p/postgres-init
+              tag: 16
+            envFrom: &envFrom
+              - secretRef:
+                  name: gatus-secret
+          init-config:
+            order: 2
+            image: &syncSyncImage
+              repository: ghcr.io/kiwigrid/k8s-sidecar
+              tag: 1.25.3@sha256:8dc0aca015bf7173378ee5987dd78d49f94ff9a5c3495b3664141750cc55f444
+            env: &configSyncEnv
+              FOLDER: /config
+              LABEL: gatus.io/enabled
+              NAMESPACE: ALL
+              RESOURCE: both
+              UNIQUE_FILENAMES: true
+              METHOD: LIST
+            resources: &resources
+              requests:
+                cpu: 10m
+              limits:
+                memory: 128Mi
+        containers:
+          main:
+            image:
+              # TODO: move to semver once available
+              repository: ghcr.io/buroa/gatus
+              tag: develop@sha256:8529a132a9063f0e4c038147e48acc26648c3ad2d1e32d97be0e04b3063d6abf
+            env:
+              TZ: ${TIMEZONE}
+              GATUS_CONFIG_PATH: /config
+              CUSTOM_WEB_PORT: &port 80
+            envFrom: *envFrom
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: &path /health
+                    port: *port
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
+              startup:
+                enabled: false
+            resources: *resources
+            securityContext: &securityContext
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+          config-sync:
+            image: *syncSyncImage
+            env:
+              <<: *configSyncEnv
+              METHOD: WATCH
+            resources: *resources
+            securityContext: *securityContext
+        pod:
+          dnsConfig:
+            options:
+              - name: ndots
+                value: "1"
+          securityContext:
+            runAsUser: 568
+            runAsGroup: 568
+            runAsNonRoot: true
+            fsGroup: 568
+            fsGroupChangePolicy: OnRootMismatch
     ingress:
       main:
         enabled: true
-        ingressClassName: nginx
+        className: external
         annotations:
-          hajimari.io/icon: material-symbols:detector-status
-          external-dns.alpha.kubernetes.io/target: ingress.${PUBLIC_DOMAIN}
+          gatus.io/enabled: "true"
+          gatus.io/path: *path
+          hajimari.io/icon: simple-icons:statuspage
+          hajimari.io/url: https://status.${PUBLIC_DOMAIN}
+          external-dns.alpha.kubernetes.io/target: external.${PUBLIC_DOMAIN}
         hosts:
-          - host: &host status.${PUBLIC_DOMAIN}
-            paths:
+          - host: &host "{{ .Release.Name }}.${PUBLIC_DOMAIN}"
+            paths: &paths
               - path: /
-                pathType: Prefix
+                service:
+                  name: main
+                  port: http
+          - host: &customHost status.${PUBLIC_DOMAIN}
+            paths: *paths
         tls:
           - hosts:
               - *host
-    serviceAccount:
-      create: true
-      name: gatus
-    podSecurityContext:
-      runAsUser: 568
-      runAsGroup: 568
-      fsGroup: 568
-      fsGroupChangePolicy: OnRootMismatch
+              - *customHost
     persistence:
       config:
         enabled: true
         type: emptyDir
       config-file:
-        enabled: true
         type: configMap
         name: gatus-configmap
-        mountPath: /config/config.yaml
-        subPath: config.yaml
-        readOnly: true
-    resources:
-      requests:
-        cpu: 100m
-        memory: 100Mi
-      limits:
-        memory: 500Mi
-    sidecars:
-      config-sync:
-        image: ghcr.io/kiwigrid/k8s-sidecar:1.25.3
-        imagePullPolicy: IfNotPresent
-        env:
-          - { name: FOLDER, value: /config }
-          - { name: LABEL, value: gatus.io/enabled }
-          - { name: NAMESPACE, value: ALL }
-          - { name: RESOURCE, value: both }
-          - { name: UNIQUE_FILENAMES, value: "true" }
-          - { name: METHOD, value: WATCH }
-        volumeMounts:
-          - { name: config, mountPath: /config }
+        globalMounts:
+          - path: /config/config.yaml
+            subPath: config.yaml
+            readOnly: true
+    service:
+      main:
+        ports:
+          http:
+            port: *port
+    serviceAccount:
+      create: true
+      name: *app
+    serviceMonitor:
+      main:
+        enabled: true

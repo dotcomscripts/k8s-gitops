@@ -5,8 +5,8 @@ metadata:
   name: cluster-apps-radarr
   namespace: flux-system
 spec:
+  targetNamespace: media
   dependsOn:
-    - name: cluster-apps-pvc-media
     - name: cluster-apps-cloudnative-pg-cluster
     - name: cluster-apps-external-secrets-stores
     - name: cluster-apps-democratic-csi-local-hostpath

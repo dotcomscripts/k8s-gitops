@@ -3,18 +3,16 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
   name: plex-auto-languages
-  namespace: media
 spec:
   interval: 30m
   chart:
     spec:
       chart: app-template
-      version: 1.5.1
+      version: 2.5.0
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
         namespace: flux-system
-  maxHistory: 2
   install:
     remediation:
       retries: 3
@@ -25,30 +23,43 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    controller:
-      annotations:
-        reloader.stakater.com/auto: "true"
-    image:
-      repository: docker.io/remirigal/plex-auto-languages
-      tag: v1.2.3
-    env:
-      TZ: ${TIMEZONE}
-      PLEX_URL: http://plex.media.svc.cluster.local:32400
-      REFRESH_LIBRARY_ON_SCAN: false
-    envFrom:
-      - secretRef:
-          name: plex-auto-languages-secret
+    controllers:
+      main:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          main:
+            image:
+              repository: docker.io/remirigal/plex-auto-languages
+              tag: v1.2.3@sha256:54bd9cf5d399514b8ed3052ce1d01a14375825a429653cb06da129685740889e
+            env:
+              TZ: ${TIMEZONE}
+              PLEX_URL: http://plex.media.svc.cluster.local:32400
+              REFRESH_LIBRARY_ON_SCAN: false
+            envFrom:
+              - secretRef:
+                  name: plex-auto-languages-secret
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+        pod:
+          securityContext:
+            runAsUser: 568
+            runAsGroup: 568
+            runAsNonRoot: true
+            fsGroup: 568
+            fsGroupChangePolicy: OnRootMismatch
+    persistence:
+      config:
+        enabled: true
+        type: emptyDir
+      local:
+        type: emptyDir
+        globalMounts:
+          - path: /.local
     service:
       main:
         enabled: false
-    persistence:
-      local:
-        enabled: true
-        type: emptyDir
-        mountPath: /.local
-    resources:
-      requests:
-        cpu: 50m
-        memory: 100Mi
-      limits:
-        memory: 1000Mi

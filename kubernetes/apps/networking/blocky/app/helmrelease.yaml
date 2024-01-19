@@ -3,18 +3,16 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
   name: &app blocky
-  namespace: networking
 spec:
   interval: 30m
   chart:
     spec:
       chart: app-template
-      version: 1.5.1
+      version: 2.5.0
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
         namespace: flux-system
-  maxHistory: 2
   install:
     remediation:
       retries: 3
@@ -25,30 +23,91 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    initContainers:
-      01-init-db:
-        image: ghcr.io/onedr0p/postgres-init:16.1
-        imagePullPolicy: IfNotPresent
-        envFrom:
-          - secretRef:
-              name: blocky-secret
-    controller:
-      strategy: RollingUpdate
-      replicas: 2
-      annotations:
-        reloader.stakater.com/auto: "true"
-    image:
-      repository: ghcr.io/0xerr0r/blocky
-      tag: v0.23
-    env:
-      TZ: ${TIMEZONE}
+    controllers:
+      main:
+        replicas: 2
+        strategy: RollingUpdate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        initContainers:
+          init-db:
+            image:
+              repository: ghcr.io/onedr0p/postgres-init
+              tag: 16
+            envFrom:
+              - secretRef:
+                  name: blocky-secret
+        containers:
+          main:
+            image:
+              repository: ghcr.io/0xerr0r/blocky
+              tag: v0.23@sha256:450d193393c0dceb108d1cd80a5580ab9d851127c924c1ae89361d32161ae528
+            env:
+              TZ: ${TIMEZONE}
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command:
+                      - /app/blocky
+                      - healthcheck
+                  initialDelaySeconds: 15
+                  periodSeconds: 30
+                  failureThreshold: 3
+              readiness: *probes
+              startup:
+                enabled: false
+        pod:
+          securityContext:
+            runAsUser: 568
+            runAsGroup: 568
+          topologySpreadConstraints:
+            - maxSkew: 1
+              topologyKey: kubernetes.io/hostname
+              whenUnsatisfiable: DoNotSchedule
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: *app
+    ingress:
+      main:
+        enabled: true
+        className: internal
+        annotations:
+          hajimari.io/enable: "false"
+        hosts:
+          - host: &host "{{ .Release.Name }}.${PUBLIC_DOMAIN}"
+            paths:
+              - path: /
+                service:
+                  name: main
+                  port: http
+        tls:
+          - hosts:
+              - *host
+    persistence:
+      config:
+        enabled: true
+        type: secret
+        name: blocky-secret
+        globalMounts:
+          - path: /app/config.yml
+            subPath: config.yml
+            readOnly: true
+      etc-hosts:
+        type: hostPath
+        hostPath: /etc/hosts
+        globalMounts:
+          - path: /etc/hosts
+            readOnly: true
     service:
       main:
         ports:
           http:
             port: 4000
       dns:
-        enabled: true
+        controller: main
         type: LoadBalancer
         annotations:
           io.cilium/lb-ipam-ips: ${BLOCKY_LB_IP}
@@ -64,52 +123,6 @@ spec:
             enabled: true
             port: 53
             protocol: UDP
-    ingress:
-      main:
-        enabled: true
-        ingressClassName: nginx
-        annotations:
-          hajimari.io/enable: "false"
-        hosts:
-          - host: &host blocky.${PUBLIC_DOMAIN}
-            paths:
-              - path: /
-                pathType: Prefix
-        tls:
-          - hosts:
-              - *host
     serviceMonitor:
       main:
         enabled: true
-    probes:
-      liveness:
-        failureThreshold: 5
-        periodSeconds: 10
-      readiness:
-        failureThreshold: 5
-        periodSeconds: 10
-      startup:
-        initialDelaySeconds: 5
-        failureThreshold: 30
-        periodSeconds: 10
-    persistence:
-      config:
-        enabled: true
-        type: secret
-        name: blocky-secret
-        mountPath: /app/config.yml
-        subPath: config.yml
-        readOnly: true
-    topologySpreadConstraints:
-      - maxSkew: 1
-        topologyKey: kubernetes.io/hostname
-        whenUnsatisfiable: DoNotSchedule
-        labelSelector:
-          matchLabels:
-            app.kubernetes.io/name: *app
-    resources:
-      requests:
-        cpu: 5m
-        memory: 10Mi
-      limits:
-        memory: 512Mi

@@ -23,9 +23,10 @@ metadata:
   namespace: flux-system
 spec:
   targetNamespace: kube-system
-  suspend: true # https://github.com/rancher/system-upgrade-controller/pull/263
+  suspend: true # TODO
   dependsOn:
     - name: cluster-apps-system-upgrade-controller
+    - name: cluster-apps-node-feature-discovery-features
   path: ./kubernetes/apps/kube-system/system-upgrade-controller/plans
   prune: true
   sourceRef:

@@ -2,19 +2,17 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
-  name: tailscale
-  namespace: networking
+  name: &app tailscale
 spec:
   interval: 30m
   chart:
     spec:
       chart: app-template
-      version: 1.5.1
+      version: 2.5.0
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
         namespace: flux-system
-  maxHistory: 2
   install:
     remediation:
       retries: 3
@@ -25,28 +23,64 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    controller:
-      annotations:
-        reloader.stakater.com/auto: "true"
-    image:
-      repository: ghcr.io/tailscale/tailscale
-      tag: v1.56.1
-    env:
-      TZ: ${TIMEZONE}
-      PORT: &port ${TAILNET_PUBLIC_PORT}
-      TS_KUBE_SECRET: tailscale-state
-      SA_NAME: tailscale
-      TS_USERSPACE: true
-      TS_ROUTES: |-
-        ${LAN_INTERNAL_IP_CIDR},${LAN_VM_IP_CIDR},${LAN_IOT_IP_CIDR},${LAN_SERVICES_IP_CIDR},${CILIUM_LB_CIDR}
-    envFrom:
-      - secretRef:
-          name: tailscale-secret
+    controllers:
+      main:
+        replicas: 2
+        strategy: RollingUpdate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          main:
+            image:
+              repository: ghcr.io/tailscale/tailscale
+              tag: v1.56.1@sha256:ac0c192f6cba52877e4d9c2fe8943f16c0ab44927605a21416852590e3ccb71e
+            env:
+              NO_AUTOUPDATE: true
+              PORT: &port ${TAILNET_PUBLIC_PORT}
+              TS_EXTRA_ARGS: --advertise-exit-node --advertise-tags=tag:k8s
+              TS_KUBE_SECRET: ""
+              TS_ROUTES: ${LAN_INTERNAL_IP_CIDR},${CILIUM_LB_CIDR}
+              TS_STATE_DIR: /tmp
+              TS_TAILSCALED_EXTRA_ARGS: --debug=0.0.0.0:2000
+              TS_USERSPACE: true
+              TZ: ${TIMEZONE}
+            envFrom:
+              - secretRef:
+                  name: tailscale-secret
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+        pod:
+          securityContext:
+            runAsUser: 568
+            runAsGroup: 568
+            runAsNonRoot: true
+            fsGroup: 568
+            fsGroupChangePolicy: OnRootMismatch
+          topologySpreadConstraints:
+            - maxSkew: 1
+              topologyKey: kubernetes.io/hostname
+              whenUnsatisfiable: DoNotSchedule
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: *app
+    persistence:
+      cache:
+        type: emptyDir
+        globalMounts:
+          - path: /.cache
+      tmp:
+        type: emptyDir
     service:
       main:
-        enabled: false
+        ports:
+          http:
+            port: 2000
       tailnet:
-        enabled: true
+        controller: main
         type: LoadBalancer
         annotations:
           io.cilium/lb-ipam-ips: ${TAILSCALE_LB_IP}
@@ -57,20 +91,12 @@ spec:
             enabled: true
             port: *port
             protocol: UDP
-    ingress:
+    serviceMonitor:
       main:
-        enabled: false
-    probes:
-      liveness:
-        enabled: false
-      readiness:
-        enabled: false
-      startup:
-        enabled: false
-    podSecurityContext:
-      runAsUser: 568
-      runAsGroup: 568
-      fsGroup: 568
-      fsGroupChangePolicy: OnRootMismatch
-    serviceAccount:
-      name: tailscale
+        enabled: true
+        endpoints:
+          - port: http
+            scheme: http
+            path: /debug/metrics
+            interval: 1m
+            scrapeTimeout: 30s

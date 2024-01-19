@@ -1,21 +1,24 @@
 ---
-clusterName: &cluster k8s
+clusterName: k8s
 
 clusterPodNets:
   - 10.244.0.0/16
 clusterSvcNets:
   - 10.245.0.0/16
 
-talosVersion: v1.5.5
-kubernetesVersion: 1.28.2
 endpoint: https://k8s.${domainName}:6443
 
-additionalApiServerCertSans:
-  - ${clusterEndpointIP}
+# renovate: datasource=github-releases depName=siderolabs/talos
+talosVersion: v1.6.2
+# renovate: datasource=github-releases extractVersion=^v(?<version>.*)$ depName=kubernetes/kubernetes
+kubernetesVersion: 1.29.1
 
-additionalMachineCertSans:
+additionalApiServerCertSans: &sans
   - ${clusterEndpointIP}
   - k8s.${domainName}
+  - 127.0.0.1 # KubePrism
+
+additionalMachineCertSans: *sans
 
 cniConfig:
   name: none
@@ -30,9 +33,6 @@ nodes:
         partitions:
           - mountpoint: /var/mnt/sata
     controlPlane: true
-    disableSearchDomain: true
-    nameservers:
-      - 10.0.1.1
     networkInterfaces:
       - interface: bond0
         bond:
@@ -64,12 +64,180 @@ nodes:
             addresses:
               - 10.0.2.2/24
             mtu: 1500
-    nodeLabels:
-      topology.kubernetes.io/region: *cluster
-      topology.kubernetes.io/zone: m
+    patches:
+      - |-
+        machine:
+          kubelet:
+            extraMounts:
+              - destination: /var/mnt/sata
+                type: bind
+                source: /var/mnt/sata
+                options:
+                  - rbind
+                  - rshared
+                  - rw
 
 controlPlane:
+  schematic:
+    customization:
+      extraKernelArgs:
+        - mitigations=off
+        - net.ifnames=0
+      systemExtensions:
+        officialExtensions:
+          - siderolabs/intel-ucode
+          - siderolabs/i915-ucode
+          - siderolabs/thunderbolt
+
   patches:
+    # Configure containerd
+    - &containerdPatch |-
+      machine:
+        files:
+          - op: create
+            path: /etc/cri/conf.d/20-customization.part
+            content: |-
+              [plugins."io.containerd.grpc.v1.cri"]
+                enable_unprivileged_ports = true
+                enable_unprivileged_icmp = true
+
+    # Disable search domain everywhere
+    - &disableSearchDomainPatch |-
+      machine:
+        network:
+          disableSearchDomain: true
+
+    # Enable cluster discovery
+    - &discoveryPatch |-
+      cluster:
+        discovery:
+          registries:
+            kubernetes:
+              disabled: false
+            service:
+              disabled: false
+
+    # Configure kubelet
+    - &kubeletPatch |-
+      machine:
+        kubelet:
+          extraArgs:
+            feature-gates: GracefulNodeShutdown=true
+            rotate-server-certificates: true
+          extraConfig:
+            maxPods: 200
+          nodeIP:
+            validSubnets:
+              - 10.0.5.0/24
+
+    # Enable KubePrism
+    - &kubePrismPatch |-
+      machine:
+        features:
+          kubePrism:
+            enabled: true
+            port: 7445
+
+    # Force nameserver
+    - &nameserverPatch |-
+      machine:
+        network:
+          nameservers:
+            - 10.0.1.1
+
+    # Configure NFS mount options
+    - &nfsPatch |-
+      machine:
+        files:
+          - op: overwrite
+            path: /etc/nfsmount.conf
+            permissions: 0o644
+            content: |
+              [ NFSMount_Global_Options ]
+              nfsvers=4.1
+              hard=True
+              noatime=True
+              nodiratime=True
+              rsize=131072
+              wsize=131072
+              nconnect=8
+
+    # Configure NTP
+    - &ntpPatch |-
+      machine:
+        time:
+          disabled: false
+          servers:
+            - time.cloudflare.com
+
+    # Static host entries
+    - &staticHostEntriesPatch |-
+      machine:
+        network:
+          extraHostEntries:
+            - ip: ${clusterEndpointIP}
+              aliases:
+                - k8s.${domainName}
+            - ip: 10.0.1.1
+              aliases:
+                - unifi.${domainName}
+            - ip: 10.0.1.10
+              aliases:
+                - nas.${domainName}
+
+    # Custom sysctl settings
+    - &sysctlPatch |-
+      machine:
+        sysctls:
+          fs.inotify.max_user_watches: 1048576
+          fs.inotify.max_user_instances: 8192
+          kernel.randomize_va_space: 0
+          net.core.netdev_max_backlog: 30000
+          net.core.rmem_max: 67108864
+          net.core.wmem_max: 67108864
+          net.ipv4.tcp_rmem: 4096 87380 33554432
+          net.ipv4.tcp_wmem: 4096 65536 33554432
+          net.ipv4.tcp_tw_reuse: 1
+          net.ipv4.tcp_window_scaling: 1
+
+    # Various udev rules
+    - &udevPatch |-
+      machine:
+        udev:
+          rules:
+            - ACTION=="add", SUBSYSTEM=="thunderbolt", ATTR{authorized}=="0", ATTR{authorized}="1"
+            - SUBSYSTEM=="drm", KERNEL=="renderD*", GROUP="44", MODE="0660"
+
+    # Cluster configuration
+    - |-
+      cluster:
+        allowSchedulingOnMasters: true
+        controllerManager:
+          extraArgs:
+            bind-address: 0.0.0.0
+        coreDNS:
+          disabled: true
+        proxy:
+          disabled: true
+        scheduler:
+          extraArgs:
+            bind-address: 0.0.0.0
+
+    # ETCD configuration
+    - |-
+      cluster:
+        etcd:
+          extraArgs:
+            listen-metrics-urls: http://0.0.0.0:2381
+          advertisedSubnets:
+            - 10.0.5.0/24
+
+    # Disable default API server admission plugins.
+    - |-
+      - op: remove
+        path: /cluster/apiServer/admissionControl
+
+    # Enable K8s Talos API Access
     - |-
       machine:
         features:
@@ -79,111 +247,17 @@ controlPlane:
               - os:admin
             allowedKubernetesNamespaces:
               - kube-system
-  inlinePatch:
-    cluster:
-      allowSchedulingOnMasters: true
-      proxy:
-        disabled: true
-      etcd:
-        extraArgs:
-          listen-metrics-urls: http://0.0.0.0:2381
-        advertisedSubnets:
-          - 10.0.5.0/24
-      controllerManager:
-        extraArgs:
-          bind-address: 0.0.0.0
-      scheduler:
-        extraArgs:
-          bind-address: 0.0.0.0
-      apiServer:
-        admissionControl: null
-      discovery:
-        registries:
-          service:
-            disabled: true
-    machine: &machine
-      install:
-        image: ghcr.io/siderolabs/installer:v1.5.5
-        extensions:
-          - image: ghcr.io/siderolabs/i915-ucode:20230804
-          - image: ghcr.io/siderolabs/intel-ucode:20230808
-          - image: ghcr.io/siderolabs/thunderbolt:v1.5.5
-        legacyBIOSSupport: true
-        extraKernelArgs:
-          - mitigations=off
-          - talos.logging.kernel=udp://vector.${domainName}:6001/
-      features:
-        kubePrism:
-          enabled: true
-          port: 7445
-      logging:
-        destinations:
-          - endpoint: udp://vector.${domainName}:6002/
-            format: json_lines
-      sysctls:
-        fs.inotify.max_user_watches: 1048576
-        fs.inotify.max_user_instances: 8192
-        kernel.randomize_va_space: 0
-        net.core.netdev_max_backlog: 30000
-        net.core.rmem_max: 67108864
-        net.core.wmem_max: 67108864
-        net.ipv4.tcp_rmem: 4096 87380 33554432
-        net.ipv4.tcp_wmem: 4096 65536 33554432
-        net.ipv4.tcp_tw_reuse: 1
-        net.ipv4.tcp_window_scaling: 1
-      udev:
-        rules:
-          - ACTION=="add", SUBSYSTEM=="thunderbolt", ATTR{authorized}=="0", ATTR{authorized}="1"
-      network:
-        extraHostEntries:
-          - ip: ${clusterEndpointIP}
-            aliases:
-              - k8s.${domainName}
-          - ip: 10.0.1.1
-            aliases:
-              - unifi.${domainName}
-          - ip: 10.0.1.10
-            aliases:
-              - nas.${domainName}
-          - ip: 10.0.0.6
-            aliases:
-              - ups.${domainName}
-          - ip: 10.0.0.7
-            aliases:
-              - pdu.${domainName}
-          - ip: 10.0.3.4
-            aliases:
-              - vector.${domainName}
-      time:
-        disabled: false
-        servers:
-          - time.cloudflare.com
-      kubelet:
-        extraArgs:
-          feature-gates: GracefulNodeShutdown=true
-          rotate-server-certificates: true
-        extraConfig:
-          maxPods: 150
-        extraMounts:
-          - destination: /var/mnt/sata
-            type: bind
-            source: /var/mnt/sata
-            options:
-              - rbind
-              - rshared
-              - rw
-        nodeIP:
-          validSubnets:
-            - 10.0.5.0/24
-      files:
-        - content: |
-            [plugins."io.containerd.grpc.v1.cri"]
-              enable_unprivileged_ports = true
-              enable_unprivileged_icmp = true
-          path: /etc/cri/conf.d/20-customization.part
-          op: create
 
 worker:
-  inlinePatch:
-    machine:
-      <<: *machine
+  patches:
+    - *containerdPatch
+    - *disableSearchDomainPatch
+    - *discoveryPatch
+    - *kubeletPatch
+    - *kubePrismPatch
+    - *nameserverPatch
+    - *nfsPatch
+    - *ntpPatch
+    - *staticHostEntriesPatch
+    - *sysctlPatch
+    - *udevPatch

@@ -3,7 +3,6 @@ apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
   name: plex-restic
-  namespace: media
 spec:
   secretStoreRef:
     kind: ClusterSecretStore
@@ -22,22 +21,59 @@ spec:
     - extract:
         key: volsync-restic-template
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plex
+spec:
+  accessModes: ["ReadWriteOnce"]
+  dataSourceRef:
+    kind: ReplicationDestination
+    apiGroup: volsync.backube
+    name: plex-rdst
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: ${CLUSTER_STORAGE_HOSTPATH}
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: plex-rdst
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: plex-restic-secret
+    copyMethod: Snapshot
+    accessModes: ["ReadWriteOnce"]
+    volumeSnapshotClassName: ${CLUSTER_SNAPSHOT_HOSTPATH}
+    storageClassName: ${CLUSTER_STORAGE_HOSTPATH}
+    cacheAccessModes: ["ReadWriteOnce"]
+    cacheCapacity: 8Gi
+    moverSecurityContext:
+      runAsUser: 568
+      runAsGroup: 568
+      fsGroup: 568
+    capacity: 100Gi # must match the PersistentVolumeClaim `.resources.requests.storage` size above
+---
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationSource
 metadata:
-  name: plex
-  namespace: media
+  name: plex-rsrc
 spec:
-  sourcePVC: plex-config
+  sourcePVC: plex
   trigger:
-    schedule: "0 8 * * *"
+    schedule: "15 */8 * * *"
   restic:
-    copyMethod: Snapshot
     pruneIntervalDays: 10
     repository: plex-restic-secret
-    cacheCapacity: 8Gi
+    copyMethod: Snapshot
+    accessModes: ["ReadWriteOnce"]
     volumeSnapshotClassName: ${CLUSTER_SNAPSHOT_HOSTPATH}
     storageClassName: ${CLUSTER_STORAGE_HOSTPATH}
+    cacheAccessModes: ["ReadWriteOnce"]
+    cacheCapacity: 8Gi
     moverSecurityContext:
       runAsUser: 568
       runAsGroup: 568

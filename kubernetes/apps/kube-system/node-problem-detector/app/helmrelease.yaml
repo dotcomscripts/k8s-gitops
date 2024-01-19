@@ -3,18 +3,16 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
   name: node-problem-detector
-  namespace: kube-system
 spec:
   interval: 30m
   chart:
     spec:
       chart: node-problem-detector
-      version: 2.3.11
+      version: 2.3.12
       sourceRef:
         kind: HelmRepository
         name: deliveryhero-charts
         namespace: flux-system
-  maxHistory: 2
   install:
     remediation:
       retries: 3
@@ -27,8 +25,9 @@ spec:
   values:
     image:
       repository: registry.k8s.io/node-problem-detector/node-problem-detector
+      tag: v0.8.15@sha256:15a8bad79ae26124109e6fdb696fd8536b2043f4ece8ff48f03073157d6a2c2d
     settings:
-      # https://github.com/kubernetes/node-problem-detector/tree/master/config
+      # Ref: https://github.com/kubernetes/node-problem-detector/tree/master/config
       log_monitors:
         - /config/kernel-monitor.json
       custom_plugin_monitors:

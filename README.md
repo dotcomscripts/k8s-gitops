@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://camo.githubusercontent.com/5b298bf6b0596795602bd771c5bddbb963e83e0f/68747470733a2f2f692e696d6775722e636f6d2f7031527a586a512e706e67" align="center" width="144px" height="144px"/>
+<img src="https://github.com/dotcomscripts/k8s-gitops/assets/23641761/27d83d82-8c8a-40f3-8a6a-b85b3db65694" align="center" width="144px" height="144px"/>
 
 ### My homelab k8s cluster ☸
 
