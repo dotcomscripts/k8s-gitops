@@ -28,7 +28,7 @@ spec:
     hajimari:
       title: Apps
       lightTheme: paper
-      darkTheme: tron
+      darkTheme: chalk
       alwaysTargetBlank: true
       showGreeting: true
       showAppGroups: false
