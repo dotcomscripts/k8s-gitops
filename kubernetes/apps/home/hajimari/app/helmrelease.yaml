@@ -38,6 +38,7 @@ spec:
       showAppUrls: true
       defaultEnable: true
       defaultSearchProvider: DuckDuckGo
+      name: Dotcom
       namespaceSelector:
         any: true
     ingress:
