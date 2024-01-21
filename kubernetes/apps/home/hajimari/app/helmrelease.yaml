@@ -26,7 +26,7 @@ spec:
     env:
       TZ: ${TIMEZONE}
     hajimari:
-      title: "Yo Apps!"
+      title: Apps
       lightTheme: tron
       darkTheme: tron
       alwaysTargetBlank: true
