@@ -8,9 +8,9 @@ clusterSvcNets:
 
 endpoint: https://k8s.${domainName}:6443
 
-# renovate: datasource=github-releases depName=siderolabs/talos
+# renovate: datasource=docker depName=ghcr.io/siderolabs/installer extractVersion=^(?<version>.*)$
 talosVersion: v1.6.2
-# renovate: datasource=github-releases extractVersion=^v(?<version>.*)$ depName=kubernetes/kubernetes
+# renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
 kubernetesVersion: 1.29.1
 
 additionalApiServerCertSans: &sans
