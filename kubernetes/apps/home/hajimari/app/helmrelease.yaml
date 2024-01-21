@@ -28,7 +28,7 @@ spec:
     hajimari:
       title: Apps
       lightTheme: paper
-      darkTheme: chalk
+      darkTheme: tron
       alwaysTargetBlank: true
       showGreeting: true
       showAppGroups: false
@@ -37,6 +37,7 @@ spec:
       showGlobalBookmarks: false
       showAppUrls: true
       defaultEnable: true
+      defaultSearchProvider: DuckDuckGo
       namespaceSelector:
         any: true
     ingress:
