@@ -27,7 +27,7 @@ spec:
       TZ: ${TIMEZONE}
     hajimari:
       title: Apps
-      lightTheme: tron
+      lightTheme: paper
       darkTheme: tron
       alwaysTargetBlank: true
       showGreeting: true
