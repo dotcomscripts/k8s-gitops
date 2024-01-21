@@ -26,9 +26,9 @@ spec:
     env:
       TZ: ${TIMEZONE}
     hajimari:
-      title: Apps
-      lightTheme: paper
-      darkTheme: chalk
+      title: Yo Apps
+      lightTheme: tron
+      darkTheme: tron
       alwaysTargetBlank: true
       showGreeting: true
       showAppGroups: false
@@ -37,6 +37,7 @@ spec:
       showGlobalBookmarks: false
       showAppUrls: true
       defaultEnable: true
+      defaultSeachProvider: DuckDuckGo
       namespaceSelector:
         any: true
     ingress:
