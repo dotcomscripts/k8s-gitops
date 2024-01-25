@@ -20,7 +20,7 @@ spec:
         values:
           - linux
   prepare: &prepare
-    image: ghcr.io/siderolabs/talosctl
+    image: ghcr.io/siderolabs/talosctl:v1.6.3
     envs:
       - name: NODE_IP
         valueFrom:

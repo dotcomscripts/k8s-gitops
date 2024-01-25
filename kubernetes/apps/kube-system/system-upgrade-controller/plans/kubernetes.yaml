@@ -4,8 +4,8 @@ kind: Plan
 metadata:
   name: kubernetes
 spec:
-  # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
-  version: 1.29.1
+  # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
+  version: v1.29.1
   serviceAccountName: system-upgrade
   secrets:
     - name: talos
@@ -17,6 +17,15 @@ spec:
     matchExpressions:
       - key: node-role.kubernetes.io/control-plane
         operator: Exists
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/master
+      operator: Exists
+      effect: NoSchedule
   prepare: &prepare
     image: ghcr.io/siderolabs/talosctl:v1.6.3
     envs:
