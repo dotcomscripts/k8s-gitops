@@ -23,7 +23,6 @@ metadata:
   namespace: flux-system
 spec:
   targetNamespace: kube-system
-  suspend: true # TODO
   dependsOn:
     - name: cluster-apps-system-upgrade-controller
     - name: cluster-apps-node-feature-discovery-features
