@@ -46,3 +46,5 @@ spec:
       serviceMonitor:
         enabled: true
         interval: 1m
+    networkPolicy:
+      enabled: false
