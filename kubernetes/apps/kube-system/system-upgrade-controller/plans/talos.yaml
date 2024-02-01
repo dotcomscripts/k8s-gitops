@@ -5,7 +5,7 @@ metadata:
   name: talos
 spec:
   # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
-  version: v1.6.3
+  version: v1.6.4
   serviceAccountName: system-upgrade
   secrets:
     - name: talos
@@ -20,7 +20,7 @@ spec:
         values:
           - linux
   prepare: &prepare
-    image: ghcr.io/siderolabs/talosctl:v1.6.3
+    image: ghcr.io/siderolabs/talosctl:v1.6.4
     envs:
       - name: NODE_IP
         valueFrom:
