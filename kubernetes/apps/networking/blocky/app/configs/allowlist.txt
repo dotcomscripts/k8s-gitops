@@ -1,7 +1,8 @@
-www.amazon.com
-login.microsoftonline.us
+cbsinteractive.hb.omtrdc.net
 saa.cbsi.com
+s0-2mdn-net.l.google.com
+s0.2mdn.net
 pubads.g.doubleclick.net
-ads.play.cbsi.video
-mobile-collector.newrelic.com
-imasdk.googleapis.com
+securepubads.g.doubleclick.net
+partnerad.l.doubleclick.net
+partnerad.l.google.com\
