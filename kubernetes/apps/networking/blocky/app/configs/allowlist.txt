@@ -1,3 +1,7 @@
 www.amazon.com
 login.microsoftonline.us
 saa.cbsi.com
+pubads.g.doubleclick.net
+ads.play.cbsi.video
+mobile-collector.newrelic.com
+imasdk.googleapis.com
