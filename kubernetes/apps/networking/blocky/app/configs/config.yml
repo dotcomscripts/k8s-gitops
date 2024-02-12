@@ -68,10 +68,6 @@ blocking:
       - other
       - suspicious
       - tracking
-    ${LAN_GUEST_IP_CIDR}:
-      - malicious
-      - suspicious
-      - tracking
 
 caching:
   minTime: 15m
