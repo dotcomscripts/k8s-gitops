@@ -57,6 +57,11 @@ spec:
               readiness: *probes
               startup:
                 enabled: false
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 1Gi
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -108,6 +113,11 @@ spec:
         globalMounts:
           - path: /etc/hosts
             readOnly: true
+      lists:
+        type: configMap
+        name: blocky-configmap
+        globalMounts:
+          - readOnly: true
     service:
       main:
         ports:
