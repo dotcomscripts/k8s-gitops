@@ -1,12 +1,18 @@
 ---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+namespace: &namespace kube-system
+commonAnnotations:
+  meta.helm.sh/release-name: &releaseName cilium
+  meta.helm.sh/release-namespace: *namespace
+commonLabels:
+  app.kubernetes.io/managed-by: Helm
 helmCharts:
   - name: cilium
     repo: https://helm.cilium.io
     version: 1.15.1
-    releaseName: cilium
-    namespace: kube-system
+    releaseName: *releaseName
+    namespace: *namespace
     valuesInline:
       autoDirectNodeRoutes: true
       bpf:
@@ -20,7 +26,7 @@ helmCharts:
         name: main
       containerRuntime:
         integration: containerd
-      devices: enp+
+      devices: bond+
       enableRuntimeDeviceDetection: true
       endpointRoutes:
         enabled: true
@@ -39,6 +45,8 @@ helmCharts:
       localRedirectPolicy: true
       operator:
         rollOutPods: true
+      podAnnotations:
+        webhooks.kyverno.io/exclude: "true"
       rollOutCiliumPods: true
       routingMode: native
       securityContext:
@@ -59,8 +67,3 @@ helmCharts:
             - NET_ADMIN
             - SYS_ADMIN
             - SYS_RESOURCE
-commonAnnotations:
-  meta.helm.sh/release-name: cilium
-  meta.helm.sh/release-namespace: kube-system
-commonLabels:
-  app.kubernetes.io/managed-by: Helm

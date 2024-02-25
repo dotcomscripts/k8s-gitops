@@ -24,30 +24,31 @@ tasks:
     preconditions:
       - { msg: "Missing talhelper config file", sh: "test -f {{.TALHELPER_CONFIG_FILE}}" }
 
-  apply-config:
-    desc: Apply Talos config to the nodes
-    dir: "{{.TALOS_DIR}}"
-    cmd: talhelper gencommand apply | bash
-
-  bootstrap:
-    desc: Bootstrap the Talos cluster
-    dir: "{{.TALOS_DIR}}"
-    cmds:
-      - talhelper gencommand bootstrap | bash
-
   kubeconfig:
     desc: Generate Talos kubeconfig
     prompt: This will overwrite the existing kubeconfig... continue?
     dir: "{{.TALOS_DIR}}"
     cmd: talosctl kubeconfig {{.ROOT_DIR}} --force
 
+  bootstrap:
+    desc: Bootstrap the Talos cluster
+    dir: "{{.TALOS_DIR}}"
+    cmd: talhelper gencommand bootstrap | bash
+
+  apply-config:
+    desc: Apply Talos config to the nodes
+    dir: "{{.TALOS_DIR}}"
+    cmd: talhelper gencommand apply | bash
+
   apply-extras:
     desc: Apply extras
     cmds:
-      - for: ["cilium", "coredns", "kubelet-csr-approver"]
+      - for: { var: apps }
         task: .bootstrap-helm-app
         vars:
-          app: '{{.ITEM}}'
+          app: "{{.ITEM}}"
+    vars:
+      apps: cilium coredns kubelet-csr-approver
 
   upgrade-talos:
     desc: Upgrade Talos on a node
@@ -55,7 +56,7 @@ tasks:
     requires:
       vars: ["node", "image"]
     preconditions:
-      - { msg: "Node not found", sh: "talosctl --nodes {{.node}} get machineconfig" }
+      - { msg: "Node not found", sh: "talosctl --nodes {{.node}} get mc" }
 
   upgrade-k8s:
     desc: Upgrade k8s on a node
@@ -63,11 +64,11 @@ tasks:
     requires:
       vars: ["node", "to"]
     preconditions:
-      - { msg: "Node not found", sh: "talosctl --nodes {{.node}} get machineconfig" }
+      - { msg: "Node not found", sh: "talosctl --nodes {{.node}} get mc" }
 
   .bootstrap-helm-app:
     internal: true
-    dir: "{{.TALOS_DIR}}/helm/{{.app}}"
+    dir: "{{.TALOS_DIR}}/apps/{{.app}}"
     cmds:
       - kubectl kustomize --enable-helm . | kubectl apply --server-side --filename -
       - defer: rm -rf ./charts

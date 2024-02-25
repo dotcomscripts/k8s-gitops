@@ -1,12 +1,12 @@
 ---
-clusterName: k8s
+clusterName: &cluster k8s
 
 clusterPodNets:
   - 10.244.0.0/16
 clusterSvcNets:
   - 10.245.0.0/16
 
-endpoint: https://k8s.${domainName}:6443
+endpoint: https://k8s.${PUBLIC_DOMAIN}:6443
 
 # renovate: depName=ghcr.io/siderolabs/installer datasource=docker
 talosVersion: v1.6.5
@@ -14,8 +14,8 @@ talosVersion: v1.6.5
 kubernetesVersion: v1.29.2
 
 additionalApiServerCertSans: &sans
-  - ${clusterEndpointIP}
-  - k8s.${domainName}
+  - ${CLUSTER_ENDPOINT_IP}
+  - k8s.${PUBLIC_DOMAIN}
   - 127.0.0.1 # KubePrism
 
 additionalMachineCertSans: *sans
@@ -24,7 +24,7 @@ cniConfig:
   name: none
 
 nodes:
-  - hostname: m0.k8s.${domainName}
+  - hostname: m0.k8s.${PUBLIC_DOMAIN}
     ipAddress: 10.0.5.2
     installDiskSelector:
       serial: S465NB0K748379B
@@ -53,7 +53,7 @@ nodes:
               - network: 0.0.0.0/0
                 gateway: 10.0.5.1
             vip:
-              ip: ${clusterEndpointIP}
+              ip: ${CLUSTER_ENDPOINT_IP}
           - vlanId: 99
             dhcp: false
             addresses:
@@ -78,7 +78,11 @@ nodes:
                   - rw
 
 controlPlane:
-  schematic:
+  nodeLabels:
+    topology.kubernetes.io/region: *cluster
+    topology.kubernetes.io/zone: m
+
+  schematic: &schematic
     customization:
       extraKernelArgs:
         - mitigations=off
@@ -175,15 +179,15 @@ controlPlane:
       machine:
         network:
           extraHostEntries:
-            - ip: ${clusterEndpointIP}
+            - ip: ${CLUSTER_ENDPOINT_IP}
               aliases:
-                - k8s.${domainName}
+                - k8s.${PUBLIC_DOMAIN}
             - ip: 10.0.1.1
               aliases:
-                - unifi.${domainName}
+                - unifi.${PUBLIC_DOMAIN}
             - ip: 10.0.1.10
               aliases:
-                - nas.${domainName}
+                - nas.${PUBLIC_DOMAIN}
 
     # Custom sysctl settings
     - &sysctlPatch |-
@@ -249,6 +253,12 @@ controlPlane:
               - kube-system
 
 worker:
+  nodeLabels:
+    topology.kubernetes.io/region: *cluster
+    topology.kubernetes.io/zone: w
+
+  schematic: *schematic
+
   patches:
     - *containerdPatch
     - *disableSearchDomainPatch
