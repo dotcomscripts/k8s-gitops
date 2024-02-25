@@ -13,7 +13,6 @@ spec:
         kind: HelmRepository
         name: cloudnative-pg-charts
         namespace: flux-system
-  maxHistory: 2
   install:
     remediation:
       retries: 3
@@ -24,8 +23,12 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    crds:
-      create: true
     config:
       data:
         INHERITED_ANNOTATIONS: kyverno.io/ignore
+    crds:
+      create: true
+    monitoring:
+      podMonitorEnabled: false
+      grafanaDashboard:
+        create: true
