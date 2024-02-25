@@ -6,23 +6,25 @@ metadata:
 spec:
   instances: 1
   imageName: ghcr.io/cloudnative-pg/postgresql:15.6-6
-  enableSuperuserAccess: true
-  inheritedMetadata:
-    annotations:
-      kyverno.io/exclude: "true"
   primaryUpdateStrategy: unsupervised
   storage:
     size: 25Gi
     storageClass: ${CLUSTER_STORAGE_HOSTPATH}
   superuserSecret:
     name: cloudnative-pg-secret
+  enableSuperuserAccess: true
   postgresql:
     parameters:
-      max_connections: "600"
-      max_slot_wal_keep_size: 10GB
-      shared_buffers: 512MB
+      max_connections: "200"
+      shared_buffers: 256MB
+  nodeMaintenanceWindow:
+    inProgress: false
+    reusePVC: true
   monitoring:
     enablePodMonitor: true
+  inheritedMetadata:
+    annotations:
+      kyverno.io/exclude: "true"
   backup:
     retentionPolicy: 30d
     barmanObjectStore:
