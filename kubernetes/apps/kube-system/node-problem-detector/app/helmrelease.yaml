@@ -25,7 +25,7 @@ spec:
   values:
     image:
       repository: registry.k8s.io/node-problem-detector/node-problem-detector
-      tag: v0.8.15@sha256:15a8bad79ae26124109e6fdb696fd8536b2043f4ece8ff48f03073157d6a2c2d
+      tag: v0.8.16@sha256:6daf7c032815e0b5118e9faffad83b97fee713b2679e42a7c5ea19b8597da12c
     settings:
       # Ref: https://github.com/kubernetes/node-problem-detector/tree/master/config
       log_monitors:
