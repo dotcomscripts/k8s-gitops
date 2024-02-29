@@ -30,7 +30,8 @@ spec:
       enabled: true
       params:
         - name: nas
-          auth: public_v1
+          auth:
+          - public_v1
           module: [synology]
           target: nas.${PUBLIC_DOMAIN}
       path: /snmp
