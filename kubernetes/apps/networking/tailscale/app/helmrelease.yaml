@@ -83,7 +83,7 @@ spec:
         annotations:
           io.cilium/lb-ipam-ips: ${TAILSCALE_LB_IP}
         ports:
-          tailnet-udp:
+          tailnet:
             enabled: true
             port: *port
             protocol: UDP
