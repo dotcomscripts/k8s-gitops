@@ -20,8 +20,6 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
-  uninstall:
-    keepHistory: false
   values:
     image:
       repository: registry.k8s.io/node-problem-detector/node-problem-detector
