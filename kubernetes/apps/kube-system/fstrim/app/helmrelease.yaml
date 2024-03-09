@@ -20,7 +20,7 @@ spec:
         type: cronjob
         cronjob:
           schedule: 0 0 * * 1
-          parallelism: 6
+          parallelism: 1
         containers:
           main:
             image:
