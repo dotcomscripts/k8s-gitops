@@ -30,7 +30,7 @@ spec:
     storageClasses:
       - name: ${CLUSTER_STORAGE_HOSTPATH}
         defaultClass: false
-        reclaimPolicy: Retain
+        reclaimPolicy: Delete
         volumeBindingMode: WaitForFirstConsumer
         allowVolumeExpansion: false
     volumeSnapshotClasses:
