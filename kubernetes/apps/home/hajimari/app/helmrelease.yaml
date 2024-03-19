@@ -65,8 +65,3 @@ spec:
     persistence:
       data:
         type: emptyDir
-    resources:
-      requests:
-        cpu: 10m
-      limits:
-        memory: 128Mi

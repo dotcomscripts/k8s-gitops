@@ -29,9 +29,11 @@ spec:
     master:
       persistence:
         enabled: false
+      resourcesPreset: none
     replica:
       persistence:
         enabled: false
+      resourcesPreset: none
     sentinel:
       enabled: true
       masterSet: redis-master
@@ -40,6 +42,7 @@ spec:
         failureThreshold: 2
       persistence:
         enabled: false
+      resourcesPreset: none
     metrics:
       enabled: true
       serviceMonitor:

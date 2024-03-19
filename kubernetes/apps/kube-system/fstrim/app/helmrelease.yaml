@@ -30,12 +30,6 @@ spec:
               tag: 2024.3.4@sha256:2dfb70e154b4d4cbd8b1f98f1647e4a96aa1fc084a7e07b2586e35f7fc743383
             env:
               SCRIPT_NAME: fstrim.sh
-            resources:
-              requests:
-                cpu: 25m
-                memory: 128Mi
-              limits:
-                memory: 128Mi
             securityContext:
               privileged: true
         pod:
