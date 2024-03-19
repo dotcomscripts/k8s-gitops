@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 2.6.0
+      version: 3.0.4
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
@@ -19,11 +19,10 @@ spec:
   upgrade:
     cleanupOnFail: true
     remediation:
+      strategy: uninstall
       retries: 3
   values:
     controllers:
-      main:
-        enabled: false
       tagging:
         type: cronjob
         cronjob: &cronjob
@@ -86,7 +85,7 @@ spec:
           <<: *cronjob
           schedule: "@daily"
         containers:
-          main:
+          app:
             <<: *container
             args:
               - orphaned
@@ -104,7 +103,7 @@ spec:
               - 65536
       reannounce:
         containers:
-          main:
+          app:
             <<: *container
             args:
               - reannounce
@@ -115,7 +114,6 @@ spec:
           securityContext: *podSecurityContext
     persistence:
       config:
-        enabled: true
         type: configMap
         name: *configMap
         advancedMounts:
@@ -130,8 +128,5 @@ spec:
         path: /volume1/PLEX
         advancedMounts:
           orphaned:
-            main:
+            app:
               - path: /media
-    service:
-      main:
-        enabled: false

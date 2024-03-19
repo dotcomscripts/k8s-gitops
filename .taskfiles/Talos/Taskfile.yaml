@@ -47,8 +47,11 @@ tasks:
         task: .bootstrap-helm-app
         vars:
           app: "{{.ITEM}}"
+      - for: { var: workers }
+        cmd: kubectl label node {{.ITEM}} node-role.kubernetes.io/worker=
     vars:
       apps: cilium coredns kubelet-csr-approver
+      workers: w0 w1 w2
 
   upgrade-talos:
     desc: Upgrade Talos on a node

@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 2.6.0
+      version: 3.0.4
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
@@ -19,16 +19,17 @@ spec:
   upgrade:
     cleanupOnFail: true
     remediation:
+      strategy: uninstall
       retries: 3
   values:
     controllers:
-      main:
+      tailscale:
         replicas: 2
         strategy: RollingUpdate
         annotations:
           reloader.stakater.com/auto: "true"
         containers:
-          main:
+          app:
             image:
               repository: ghcr.io/tailscale/tailscale
               tag: v1.62.0@sha256:22a86da9e6d770642a933a3b038ae0146345040210f8c0d96d33802e2ab0ce77
@@ -36,15 +37,19 @@ spec:
               NO_AUTOUPDATE: true
               PORT: &port ${TAILNET_PUBLIC_PORT}
               TS_EXTRA_ARGS: --advertise-exit-node --advertise-tags=tag:k8s
-              TS_KUBE_SECRET: ""
               TS_ROUTES: ${LAN_INTERNAL_IP_CIDR},${CILIUM_LB_CIDR}
-              TS_STATE_DIR: /tmp
+              TS_STATE_DIR: &path /tmp
               TS_TAILSCALED_EXTRA_ARGS: --debug=0.0.0.0:2000
               TS_USERSPACE: true
               TZ: ${TIMEZONE}
             envFrom:
               - secretRef:
                   name: tailscale-secret
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -72,13 +77,17 @@ spec:
           - path: /.cache
       tmp:
         type: emptyDir
+        globalMounts:
+          - path: *path
     service:
-      main:
+      app:
+        controller: *app
+        nameOverride: *app
         ports:
           http:
             port: 2000
       tailnet:
-        controller: main
+        controller: *app
         type: LoadBalancer
         annotations:
           io.cilium/lb-ipam-ips: ${TAILSCALE_LB_IP}
@@ -88,8 +97,8 @@ spec:
             port: *port
             protocol: UDP
     serviceMonitor:
-      main:
-        enabled: true
+      app:
+        serviceName: *app
         endpoints:
           - port: http
             scheme: http

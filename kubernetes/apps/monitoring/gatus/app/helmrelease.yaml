@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 2.6.0
+      version: 3.0.4
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
@@ -19,15 +19,15 @@ spec:
   upgrade:
     cleanupOnFail: true
     remediation:
+      strategy: uninstall
       retries: 3
   values:
     controllers:
-      main:
+      gatus:
         annotations:
           reloader.stakater.com/auto: "true"
         initContainers:
           init-db:
-            order: 1
             image:
               repository: ghcr.io/onedr0p/postgres-init
               tag: 16
@@ -35,7 +35,7 @@ spec:
               - secretRef:
                   name: gatus-secret
           init-config:
-            order: 2
+            dependsOn: init-db
             image: &syncSyncImage
               repository: ghcr.io/kiwigrid/k8s-sidecar
               tag: 1.26.1@sha256:b8d5067137fec093cf48670dc3a1dbb38f9e734f3a6683015c2e89a45db5fd16
@@ -46,17 +46,11 @@ spec:
               RESOURCE: both
               UNIQUE_FILENAMES: true
               METHOD: LIST
-            resources: &resources
-              requests:
-                cpu: 10m
-              limits:
-                memory: 128Mi
         containers:
-          main:
+          app:
             image:
-              # TODO: Move to semver when v5.7.0+ is released
               repository: ghcr.io/twin/gatus
-              tag: latest@sha256:fecb4c38722df59f5e00ab4fcf2393d9b8dad9161db208d8d79386dc86da8a55
+              tag: v5.8.0@sha256:fecb4c38722df59f5e00ab4fcf2393d9b8dad9161db208d8d79386dc86da8a55
             env:
               TZ: ${TIMEZONE}
               GATUS_CONFIG_PATH: /config
@@ -75,9 +69,6 @@ spec:
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
-              startup:
-                enabled: false
-            resources: *resources
             securityContext: &securityContext
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -89,7 +80,6 @@ spec:
             env:
               <<: *configSyncEnv
               METHOD: WATCH
-            resources: *resources
             securityContext: *securityContext
         pod:
           dnsConfig:
@@ -103,8 +93,7 @@ spec:
             fsGroup: 568
             fsGroupChangePolicy: OnRootMismatch
     ingress:
-      main:
-        enabled: true
+      app:
         className: external
         annotations:
           gatus.io/enabled: "true"
@@ -117,7 +106,7 @@ spec:
             paths: &paths
               - path: /
                 service:
-                  name: main
+                  identifier: app
                   port: http
           - host: &customHost status.${PUBLIC_DOMAIN}
             paths: *paths
@@ -127,7 +116,6 @@ spec:
               - *customHost
     persistence:
       config:
-        enabled: true
         type: emptyDir
       config-file:
         type: configMap
@@ -137,7 +125,8 @@ spec:
             subPath: config.yaml
             readOnly: true
     service:
-      main:
+      app:
+        controller: *app
         ports:
           http:
             port: *port
@@ -145,5 +134,11 @@ spec:
       create: true
       name: *app
     serviceMonitor:
-      main:
-        enabled: true
+      app:
+        serviceName: *app
+        endpoints:
+          - port: http
+            scheme: http
+            path: /metrics
+            interval: 1m
+            scrapeTimeout: 10s

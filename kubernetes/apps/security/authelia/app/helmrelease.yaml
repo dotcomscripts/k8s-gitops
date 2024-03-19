@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 2.6.0
+      version: 3.0.4
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
@@ -19,10 +19,11 @@ spec:
   upgrade:
     cleanupOnFail: true
     remediation:
+      strategy: uninstall
       retries: 3
   values:
     controllers:
-      main:
+      authelia:
         replicas: 2
         strategy: RollingUpdate
         annotations:
@@ -36,11 +37,10 @@ spec:
               - secretRef:
                   name: authelia-secret
         containers:
-          main:
+          app:
             image:
-              # TODO: Move to semver when v4.38.0+ is released
               repository: ghcr.io/authelia/authelia
-              tag: v4.38.0-beta3@sha256:b48ae4d0ed9d1eee76efe382df60928bae550ec19e5663858dde6dc5f41cf285
+              tag: 4.38.4@sha256:b92ad6ed6050baf91aa554abeea0f942f8fb798b62f835b1eaa3c8eeb4705f54
             env:
               AUTHELIA_SERVER_ADDRESS: tcp://0.0.0.0:9091
               AUTHELIA_SERVER_DISABLE_HEALTHCHECK: true
@@ -63,8 +63,11 @@ spec:
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
-              startup:
-                enabled: false
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 128Mi
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -72,7 +75,6 @@ spec:
                 drop:
                   - ALL
         pod:
-          enableServiceLinks: false
           securityContext:
             runAsUser: 568
             runAsGroup: 568
@@ -85,8 +87,7 @@ spec:
                 matchLabels:
                   app.kubernetes.io/name: *app
     ingress:
-      main:
-        enabled: true
+      app:
         className: internal
         annotations:
           hajimari.io/icon: mdi:shield-account
@@ -101,7 +102,7 @@ spec:
             paths: &paths
               - path: /
                 service:
-                  name: main
+                  identifier: app
                   port: http
           - host: &customHost auth.${PUBLIC_DOMAIN}
             paths: *paths
@@ -111,7 +112,6 @@ spec:
               - *customHost
     persistence:
       config:
-        enabled: true
         type: configMap
         name: authelia-configmap
         globalMounts:
@@ -119,15 +119,16 @@ spec:
             subPath: configuration.yml
             readOnly: true
     service:
-      main:
+      app:
+        controller: *app
         ports:
           http:
             port: *port
           metrics:
             port: 8080
     serviceMonitor:
-      main:
-        enabled: true
+      app:
+        serviceName: *app
         endpoints:
           - port: metrics
             scheme: http

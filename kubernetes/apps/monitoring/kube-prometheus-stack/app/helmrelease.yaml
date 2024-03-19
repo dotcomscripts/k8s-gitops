@@ -44,7 +44,7 @@ spec:
         replicas: 1
         useExistingSecret: true
         configSecret: alertmanager-secret
-        podAntiAffinity: hard
+        externalUrl: https://am.${PUBLIC_DOMAIN}
         storage:
           volumeClaimTemplate:
             spec:
@@ -56,19 +56,38 @@ spec:
       enabled: true
       serviceMonitor:
         metricRelabelings:
-          - action: replace
-            sourceLabels: ["node"]
-            targetLabel: instance
+          - action: labeldrop
+            regex: (uid)
+          - action: labeldrop
+            regex: (id|name)
+          - action: drop
+            sourceLabels:
+              - __name__
+            regex: (rest_client_request_duration_seconds_bucket|rest_client_request_duration_seconds_sum|rest_client_request_duration_seconds_count)
     kubeApiServer:
       enabled: true
+      serviceMonitor:
+        metricRelabelings:
+          - action: drop
+            sourceLabels:
+              - __name__
+            regex: (apiserver|etcd|rest_client)_request(|_sli|_slo)_duration_seconds_bucket
+          - action: drop
+            sourceLabels:
+              - __name__
+            regex: (apiserver_response_sizes_bucket|apiserver_watch_events_sizes_bucket)
     kubeControllerManager:
-      enabled: false
+      enabled: true
+      endpoints: &endpoints
+        - 10.0.5.2
     kubeEtcd:
-      enabled: false
+      enabled: true
+      endpoints: *endpoints
     kubeProxy:
       enabled: false
     kubeScheduler:
-      enabled: false
+      enabled: true
+      endpoints: *endpoints
     prometheus:
       ingress:
         enabled: true
@@ -85,6 +104,10 @@ spec:
           - hosts:
               - *host
       prometheusSpec:
+        image:
+          registry: quay.io
+          repository: prometheus/prometheus
+          tag: v2.51.0-rc.0-dedupelabels
         replicas: 1
         replicaExternalLabelName: __replica__
         ruleSelectorNilUsesHelmValues: false
@@ -98,6 +121,7 @@ spec:
           - auto-gomaxprocs
           - memory-snapshot-on-shutdown
           - new-service-discovery-manager
+        externalUrl: https://prometheus.${PUBLIC_DOMAIN}
         retention: 2d
         retentionSize: 15GB
         storageSpec:
@@ -110,6 +134,7 @@ spec:
     nodeExporter:
       enabled: true
     prometheus-node-exporter:
+      fullnameOverride: node-exporter
       prometheus:
         monitor:
           enabled: true
@@ -123,6 +148,7 @@ spec:
     kubeStateMetrics:
       enabled: true
     kube-state-metrics:
+      fullnameOverride: kube-state-metrics
       metricLabelsAllowlist:
         - pods=[*]
         - deployments=[*]
@@ -145,7 +171,18 @@ spec:
           multicluster:
             etcd:
               enabled: true
-  valuesFrom:
-    - kind: ConfigMap
-      name: kube-state-metrics-configmap
-      valuesKey: kube-state-metrics.yaml
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              version: v1
+              kind: ConfigMap
+              labelSelector: grafana_dashboard in (1)
+            patch: |-
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: not-used
+                namespace: not-used
+                annotations:
+                  grafana_folder: Kubernetes

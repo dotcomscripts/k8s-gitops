@@ -82,7 +82,7 @@ controlPlane:
     topology.kubernetes.io/region: *cluster
     topology.kubernetes.io/zone: m
 
-  schematic: &schematic
+  schematic:
     customization:
       extraKernelArgs:
         - mitigations=off
@@ -250,24 +250,4 @@ controlPlane:
             allowedRoles:
               - os:admin
             allowedKubernetesNamespaces:
-              - kube-system
-
-worker:
-  nodeLabels:
-    topology.kubernetes.io/region: *cluster
-    topology.kubernetes.io/zone: w
-
-  schematic: *schematic
-
-  patches:
-    - *containerdPatch
-    - *disableSearchDomainPatch
-    - *discoveryPatch
-    - *kubeletPatch
-    - *kubePrismPatch
-    - *nameserverPatch
-    - *nfsPatch
-    - *ntpPatch
-    - *staticHostEntriesPatch
-    - *sysctlPatch
-    - *udevPatch
+              - system-upgrade
