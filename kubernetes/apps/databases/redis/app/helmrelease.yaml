@@ -27,22 +27,19 @@ spec:
       enabled: false
       sentinel: false
     master:
+      resourcesPreset: none
       persistence:
         enabled: false
-      resourcesPreset: none
     replica:
+      resourcesPreset: none
       persistence:
         enabled: false
-      resourcesPreset: none
     sentinel:
       enabled: true
       masterSet: redis-master
-      getMasterTimeout: 10
-      startupProbe:
-        failureThreshold: 2
+      resourcesPreset: none
       persistence:
         enabled: false
-      resourcesPreset: none
     metrics:
       enabled: true
       serviceMonitor:
