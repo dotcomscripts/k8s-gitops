@@ -35,7 +35,7 @@ spec:
               - sabnzbd
             env:
               PORT: &port 9712
-              URL: http://sabnzbd.media.svc.cluster.local.:8080
+              URL: http://sabnzbd.media.svc.cluster.local:8080
             envFrom:
               - secretRef:
                   name: sabnzbd-exporter-secret
@@ -51,6 +51,10 @@ spec:
                 drop:
                   - ALL
         pod:
+          dnsConfig:
+            options:
+              - name: ndots
+                value: "1"
           securityContext:
             runAsUser: 568
             runAsGroup: 568
@@ -68,7 +72,7 @@ spec:
           - port: http
             scheme: http
             path: /metrics
-            interval: 1m
+            interval: 30s
             scrapeTimeout: 10s
             metricRelabelings:
               - action: labeldrop
