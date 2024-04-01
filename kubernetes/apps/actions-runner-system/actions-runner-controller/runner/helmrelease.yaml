@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
-  name: k8s-gitops
+  name: &app gha-runner-scale-set
 spec:
   interval: 30m
   chart:
@@ -22,7 +22,8 @@ spec:
       strategy: rollback
       retries: 3
   values:
-    runnerScaleSetName: arc-runner-set-k8s-gitops
+    nameOverride: *app
+    runnerScaleSetName: *app
     githubConfigUrl: https://github.com/dotcomscripts/k8s-gitops
     minRunners: 1
     maxRunners: 3
@@ -32,11 +33,11 @@ spec:
       spec:
         containers:
           - name: runner
-            image: ghcr.io/onedr0p/actions-runner:2.315.0@sha256:08ea5f7f4768d07be9975a2190ffc5ab2df44e77e173f4cda96f9906dffdaadd
+            image: ghcr.io/buroa/actions-runner:2.315.0@sha256:e406728a3e82bf76ba22df3780bb2cccfb022d84e3cda7a7be103e9a40d1c429
             command:
               - /home/runner/run.sh
     controllerServiceAccount:
-      name: actions-runner-controller-gha-rs-controller
+      name: gha-runner-scale-set-controller
       namespace: actions-runner-system
   valuesFrom:
     - kind: Secret

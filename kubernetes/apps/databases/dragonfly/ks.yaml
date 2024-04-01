@@ -2,13 +2,11 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: cluster-apps-actions-runner-controller
+  name: cluster-apps-dragonfly
   namespace: flux-system
 spec:
-  targetNamespace: actions-runner-system
-  dependsOn:
-    - name: cluster-apps-external-secrets-stores
-  path: ./kubernetes/apps/actions-runner-system/actions-runner-controller/app
+  targetNamespace: databases
+  path: ./kubernetes/apps/databases/dragonfly/app
   prune: true
   sourceRef:
     kind: GitRepository
@@ -21,13 +19,13 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: cluster-apps-actions-runner-controller-runner
+  name: cluster-apps-dragonfly-cluster
   namespace: flux-system
 spec:
-  targetNamespace: actions-runner-system
+  targetNamespace: databases
   dependsOn:
-    - name: cluster-apps-actions-runner-controller
-  path: ./kubernetes/apps/actions-runner-system/actions-runner-controller/runner
+    - name: cluster-apps-dragonfly
+  path: ./kubernetes/apps/databases/dragonfly/cluster
   prune: true
   sourceRef:
     kind: GitRepository

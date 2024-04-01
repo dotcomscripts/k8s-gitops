@@ -31,7 +31,7 @@ spec:
         initContainers:
           init-db:
             image:
-              repository: ghcr.io/onedr0p/postgres-init
+              repository: ghcr.io/buroa/postgres-init
               tag: 16
             envFrom:
               - secretRef:
@@ -122,11 +122,9 @@ spec:
           external-dns.alpha.kubernetes.io/hostname: dns.${PUBLIC_DOMAIN}
         ports:
           dns-tcp:
-            enabled: true
             port: *port
             protocol: TCP
           dns-udp:
-            enabled: true
             port: *port
             protocol: UDP
     serviceMonitor:

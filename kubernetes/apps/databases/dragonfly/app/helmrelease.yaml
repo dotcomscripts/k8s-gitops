@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
-  name: &app smtp-relay
+  name: &app dragonfly-operator
 spec:
   interval: 30m
   chart:
@@ -23,28 +23,48 @@ spec:
       retries: 3
   values:
     controllers:
-      smtp-relay:
+      dragonfly-operator:
         replicas: 2
         strategy: RollingUpdate
-        annotations:
-          reloader.stakater.com/auto: "true"
         containers:
           app:
             image:
-              repository: ghcr.io/foxcpp/maddy
-              tag: 0.7.1@sha256:6ab538e2f28baf2324f7cb418c7f9476fd9c7e9fa9b14bc3aecf51a9f6962064
-            env:
-              SMTP_RELAY_METRICS_PORT: &metricsPort 8080
-              SMTP_RELAY_SMTP_PORT: &smtpPort 25
-              SMTP_RELAY_SERVER_PORT: 587
-            envFrom:
-              - secretRef:
-                  name: smtp-relay-secret
+              repository: ghcr.io/dragonflydb/operator
+              tag: v1.1.1@sha256:73db24768f5b652a408b864875e367979e539fe543b3c83771be61f282f34d89
+            args:
+              - --health-probe-bind-address=:8081
+              - --metrics-bind-address=:8080
+              - --leader-elect
+            command:
+              - /manager
             probes:
               liveness:
                 enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /healthz
+                    port: &port 8081
+                  initialDelaySeconds: 15
+                  periodSeconds: 20
+                  timeoutSeconds: 1
+                  failureThreshold: 3
               readiness:
                 enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /readyz
+                    port: *port
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 128Mi
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -53,11 +73,9 @@ spec:
                   - ALL
         pod:
           securityContext:
-            runAsUser: 568
-            runAsGroup: 568
+            runAsUser: 65534
+            runAsGroup: 65534
             runAsNonRoot: true
-            fsGroup: 568
-            fsGroupChangePolicy: OnRootMismatch
           topologySpreadConstraints:
             - maxSkew: 1
               topologyKey: kubernetes.io/hostname
@@ -65,30 +83,22 @@ spec:
               labelSelector:
                 matchLabels:
                   app.kubernetes.io/name: *app
-    persistence:
-      cache:
-        type: emptyDir
-        medium: Memory
-      config:
-        type: configMap
-        name: smtp-relay-configmap
-        globalMounts:
-          - path: /data/maddy.conf
-            subPath: maddy.conf
-            readOnly: true
     service:
       app:
         controller: *app
         ports:
           http:
-            port: *metricsPort
-          smtp:
-            port: *smtpPort
+            port: *port
+          metrics:
+            port: 8080
+    serviceAccount:
+      create: true
+      name: *app
     serviceMonitor:
       app:
         serviceName: *app
         endpoints:
-          - port: http
+          - port: metrics
             scheme: http
             path: /metrics
             interval: 1m

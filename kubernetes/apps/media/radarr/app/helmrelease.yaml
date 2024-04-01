@@ -29,7 +29,7 @@ spec:
         initContainers:
           init-db:
             image:
-              repository: ghcr.io/onedr0p/postgres-init
+              repository: ghcr.io/buroa/postgres-init
               tag: 16
             envFrom: &envFrom
               - secretRef:
@@ -37,10 +37,9 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/onedr0p/radarr-develop
-              tag: 5.4.4.8688@sha256:1f6df3f2ab278644811f8984d0108f27005f4bc63665efebec5169184b9db527
+              repository: ghcr.io/buroa/radarr-develop
+              tag: 5.4.4.8688@sha256:75a21f22ac9205cb0ef2d57d92c1cb58e98f626befc4c1733794af434f595c96
             env:
-              COMPlus_EnableDiagnostics: 0
               RADARR__AUTHENTICATION_METHOD: External
               RADARR__AUTHENTICATION_REQUIRED: DisabledForLocalAddresses
               RADARR__INSTANCE_NAME: Radarr

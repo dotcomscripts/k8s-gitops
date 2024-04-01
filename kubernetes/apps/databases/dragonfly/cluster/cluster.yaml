@@ -1,0 +1,11 @@
+---
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: dragonfly
+spec:
+  image: ghcr.io/dragonflydb/dragonfly:v1.15.1
+  replicas: 1
+  args:
+    - --proactor_threads=2
+    - --cluster_mode=emulated
