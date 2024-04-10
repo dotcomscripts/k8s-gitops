@@ -9,3 +9,4 @@ spec:
   args:
     - --proactor_threads=2
     - --cluster_mode=emulated
+    - --lock_on_hashtags
