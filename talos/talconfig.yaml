@@ -251,3 +251,21 @@ controlPlane:
               - os:admin
             allowedKubernetesNamespaces:
               - system-upgrade
+
+worker:
+  nodeLabels:
+    topology.kubernetes.io/region: *cluster
+    topology.kubernetes.io/zone: w
+
+  patches:
+    - *containerdPatch
+    - *disableSearchDomainPatch
+    - *discoveryPatch
+    - *kubeletPatch
+    - *kubePrismPatch
+    - *nameserverPatch
+    - *nfsPatch
+    - *ntpPatch
+    - *staticHostEntriesPatch
+    - *sysctlPatch
+    - *udevPatch
