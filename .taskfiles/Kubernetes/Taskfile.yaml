@@ -18,8 +18,8 @@ tasks:
             "containers": [
               {
                 "name": "debug",
-                "image": "ghcr.io/buroa/alpine:rolling",
-                "command": ["/bin/bash"],
+                "image": "docker.io/library/alpine:3.19",
+                "command": ["/bin/sh"],
                 "stdin": true,
                 "stdinOnce": true,
                 "tty": true,
@@ -65,10 +65,8 @@ tasks:
               "containers": [
                 {
                   "name": "debug",
-                  "image": "ghcr.io/buroa/alpine:rolling",
-                  "command": [
-                    "/bin/bash"
-                  ],
+                  "image": "docker.io/library/alpine:3.19",
+                  "command": ["/bin/sh"],
                   "stdin": true,
                   "stdinOnce": true,
                   "tty": true,
@@ -117,8 +115,8 @@ tasks:
     preconditions:
       - { msg: "Node not found", sh: "kubectl -n {{.ns}} get node {{.node}}" }
 
-  delete-pods:
-    desc: Deletes pods in a phase
-    requires:
-      vars: ["phase"]
-    cmd: kubectl delete pods --field-selector status.phase={{.phase}} -A --ignore-not-found=true
+  delete-failed-pods:
+    desc: Deletes pods with a fucked status
+    cmds:
+      - for: ["Evicted", "Failed", "Succeeded"]
+        cmd: kubectl delete pods --field-selector status.phase={{.ITEM}} -A --ignore-not-found=true
