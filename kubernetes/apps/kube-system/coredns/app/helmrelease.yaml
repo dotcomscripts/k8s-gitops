@@ -55,8 +55,7 @@ spec:
               fallthrough in-addr.arpa ip6.arpa
               ttl 30
           - name: forward
-            # parameters: . ${BLOCKY_LB_IP} 127.0.0.1:5301
-            parameters: . 127.0.0.1:5301
+            parameters: . ${BLOCKY_LB_IP} 127.0.0.1:5301
             configBlock: |-
               policy sequential
               health_check 5s
