@@ -17,7 +17,6 @@ includes:
   external-secrets: .taskfiles/ExternalSecrets
   flux: .taskfiles/Flux
   kubernetes: .taskfiles/Kubernetes
-  rook: .taskfiles/Rook
   talos: .taskfiles/Talos
   volsync: .taskfiles/VolSync
 
