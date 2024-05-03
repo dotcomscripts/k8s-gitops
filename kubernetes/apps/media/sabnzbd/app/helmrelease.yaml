@@ -32,7 +32,6 @@ spec:
               repository: ghcr.io/buroa/sabnzbd
               tag: 4.3.0@sha256:2333ec8bf7a786406144e0a1b9240c37777bf0b7c9ca81605ee72a492b45b8a8
             env:
-              TZ: ${TIMEZONE}
               SABNZBD__PORT: &port 8080
               SABNZBD__HOST_WHITELIST_ENTRIES: >-
                 sabnzbd,
