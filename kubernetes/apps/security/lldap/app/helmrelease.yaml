@@ -41,7 +41,7 @@ spec:
             image:
               # TODO: Update the image to a semver tag
               repository: ghcr.io/lldap/lldap
-              tag: latest-alpine-rootless@sha256:ef0a6d235a447d794643d5bc90f7fcd2eba3b75aa81c009df20b9561460c3cef
+              tag: latest-alpine-rootless@sha256:4899ac68d34653e3f1750786c46a2d0892f9227b2499d3b703a11ed18c071c05
             env:
               TZ: ${TIMEZONE}
               LLDAP_HTTP_PORT: &httpPort 80
