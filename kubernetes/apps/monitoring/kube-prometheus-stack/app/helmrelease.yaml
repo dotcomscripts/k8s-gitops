@@ -104,10 +104,6 @@ spec:
           - hosts:
               - *host
       prometheusSpec:
-        image:
-          registry: quay.io
-          repository: prometheus/prometheus
-          tag: v2.51.0-dedupelabels
         replicas: 1
         replicaExternalLabelName: __replica__
         ruleSelectorNilUsesHelmValues: false
