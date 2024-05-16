@@ -4,11 +4,10 @@ kind: Kustomization
 resources:
   - ./externalsecret.yaml
   - ./helmrelease.yaml
-  - ./datasource
 configMapGenerator:
   - name: blocky-config-tpl
     files:
-      - ./configs/config.yml
+      - ./resources/config.yml
   - name: blocky-configmap
     files:
       - ./lists/whitelist.txt

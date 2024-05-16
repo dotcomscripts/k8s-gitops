@@ -7,6 +7,6 @@ resources:
 configMapGenerator:
   - name: cross-seed-configmap
     files:
-      - ./configs/config.js
+      - ./resources/config.js
 generatorOptions:
   disableNameSuffixHash: true
