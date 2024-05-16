@@ -36,10 +36,10 @@
       separateMinorPatch: true,
     },
     {
-      description: ["System Upgrade Controller Group"],
-      groupName: "System Upgrade Controller",
-      matchPackagePatterns: ["system-upgrade-controller"],
-      matchDatasources: ["docker", "github-releases"],
+      description: ["Intel-Device-Plugins Group"],
+      groupName: "Intel-Device-Plugins",
+      matchPackagePatterns: ["intel-device-plugins"],
+      matchDatasources: ["helm"],
       group: {
         commitMessageTopic: "{{{groupName}}} group",
       },
@@ -50,17 +50,6 @@
       groupName: "Talos",
       matchPackagePatterns: ["siderolabs/installer", "siderolabs/talosctl"],
       matchDatasources: ["docker"],
-      group: {
-        commitMessageTopic: "{{{groupName}}} group",
-      },
-      separateMinorPatch: true,
-    },
-    {
-      description: ["Volsync Group"],
-      groupName: "Volsync",
-      matchPackagePatterns: ["volsync"],
-      matchDatasources: ["docker", "helm"],
-      matchUpdateTypes: ["minor", "patch"],
       group: {
         commitMessageTopic: "{{{groupName}}} group",
       },
