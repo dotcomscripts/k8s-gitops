@@ -31,7 +31,13 @@ spec:
               tag: 4.6.5@sha256:a90555ebe0a25585dfccec604c295b278fe40e14a1254426c52f629e51441554
             env:
               QBITTORRENT__PORT: &port 8080
-              QBITTORRENT__BT_PORT: &bittorrentPort ${TORRENT_PUBLIC_PORT}
+              QBITTORRENT__BT_PORT: &bittorrentPort ${NET_SERVICES_TORRENT_PORT}
+              QBT_Application__MemoryWorkingSetLimit:
+                valueFrom:
+                  resourceFieldRef:
+                    containerName: app
+                    resource: limits.memory
+                    divisor: 1Mi
               QBT_Preferences__WebUI__AlternativeUIEnabled: false
               QBT_Preferences__WebUI__AuthSubnetWhitelistEnabled: true
               QBT_Preferences__WebUI__AuthSubnetWhitelist: 10.0.0.0/8
@@ -62,15 +68,15 @@ spec:
               capabilities:
                 drop:
                   - ALL
-        pod:
-          securityContext:
-            runAsUser: 568
-            runAsGroup: 568
-            runAsNonRoot: true
-            fsGroup: 568
-            fsGroupChangePolicy: OnRootMismatch
-            supplementalGroups:
-              - 65536
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroup: 568
+        fsGroupChangePolicy: OnRootMismatch
+        supplementalGroups:
+          - 65536
     ingress:
       app:
         className: internal
@@ -95,7 +101,7 @@ spec:
         existingClaim: *app
       media:
         type: nfs
-        server: nas.${PUBLIC_DOMAIN}
+        server: nas.${PRIVATE_DOMAIN}
         path: /volume1/PLEX
     service:
       app:
@@ -108,7 +114,11 @@ spec:
         controller: *app
         type: LoadBalancer
         annotations:
-          io.cilium/lb-ipam-ips: ${TORRENT_LB_IP}
+          io.cilium/lb-ipam-ips: ${NET_SERVICES_QBITTORRENT_IP}
         ports:
-          bittorrent:
+          bittorrent-tcp:
             port: *bittorrentPort
+            protocol: TCP
+          bittorrent-udp:
+            port: *bittorrentPort
+            protocol: UDP

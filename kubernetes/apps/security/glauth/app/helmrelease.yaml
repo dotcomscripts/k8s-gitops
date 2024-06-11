@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app karma
+  name: &app glauth
 spec:
   interval: 30m
   chart:
@@ -23,24 +23,29 @@ spec:
       retries: 3
   values:
     controllers:
-      karma:
+      glauth:
         replicas: 2
         strategy: RollingUpdate
+        annotations:
+          reloader.stakater.com/auto: "true"
         containers:
           app:
             image:
-              repository: ghcr.io/prymitive/karma
-              tag: v0.120@sha256:733bff15f2529065f1c1b50b13e4a56a541d3c0615dbc6b4b6a07befbfcc27ff
-            env:
-              ALERTMANAGER_URI: http://alertmanager-operated.monitoring.svc.cluster.local:9093
+              repository: docker.io/glauth/glauth
+              tag: v2.3.2@sha256:5112abbb2b5145dadb1a2fed57242ad3718e4af11062d0bb812b50cda6c708ab
+            command:
+              - /app/glauth
+            args:
+              - -c
+              - /config
             probes:
               liveness: &probes
                 enabled: true
                 custom: true
                 spec:
                   httpGet:
-                    path: /health
-                    port: &port 8080
+                    path: /
+                    port: &port 5555
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
@@ -53,10 +58,6 @@ spec:
                 drop:
                   - ALL
     defaultPodOptions:
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
       securityContext:
         runAsNonRoot: true
         runAsUser: 568
@@ -68,27 +69,28 @@ spec:
           labelSelector:
             matchLabels:
               app.kubernetes.io/name: *app
-    ingress:
-      app:
-        className: internal
-        annotations:
-          hajimari.io/icon: mdi:recycle
-        hosts:
-          - host: &host "{{ .Release.Name }}.${PUBLIC_DOMAIN}"
-            paths:
-              - path: /
-                service:
-                  identifier: app
-                  port: http
-        tls:
-          - hosts:
-              - *host
+    persistence:
+      config:
+        type: secret
+        name: glauth-secret
+        globalMounts:
+          - path: /config/groups.toml
+            subPath: groups.toml
+            readOnly: true
+          - path: /config/server.toml
+            subPath: server.toml
+            readOnly: true
+          - path: /config/users.toml
+            subPath: users.toml
+            readOnly: true
     service:
       app:
         controller: *app
         ports:
           http:
             port: *port
+          ldap:
+            port: 389
     serviceMonitor:
       app:
         serviceName: *app

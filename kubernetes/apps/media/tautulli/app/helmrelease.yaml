@@ -60,21 +60,19 @@ spec:
               GITSYNC_PERIOD: 86400s # 1 day
               GITSYNC_ROOT: /add-ons
             securityContext: *securityContext
-        pod:
-          securityContext:
-            runAsUser: 568
-            runAsGroup: 568
-            runAsNonRoot: true
-            fsGroup: 568
-            fsGroupChangePolicy: OnRootMismatch
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroup: 568
+        fsGroupChangePolicy: OnRootMismatch
     ingress:
       app:
         className: external
         annotations:
-          gatus.io/enabled: "true"
           gatus.io/path: *path
           hajimari.io/icon: mdi:chart-bar
-          external-dns.alpha.kubernetes.io/target: external.${PUBLIC_DOMAIN}
         hosts:
           - host: &host "{{ .Release.Name }}.${PUBLIC_DOMAIN}"
             paths:

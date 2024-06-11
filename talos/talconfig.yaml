@@ -182,12 +182,6 @@ controlPlane:
             - ip: ${CLUSTER_ENDPOINT_IP}
               aliases:
                 - k8s.${PUBLIC_DOMAIN}
-            - ip: 10.0.1.1
-              aliases:
-                - unifi.${PUBLIC_DOMAIN}
-            - ip: 10.0.1.10
-              aliases:
-                - nas.${PUBLIC_DOMAIN}
 
     # Custom sysctl settings
     - &sysctlPatch |-

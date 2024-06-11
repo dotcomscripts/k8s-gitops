@@ -1,5 +1,0 @@
-# My personal whitelist
-*.s0.2mdn.net
-*.microsoftonline.us
-*pubads.g.doubleclick.net
-ads.play.cbsi.video

@@ -2,11 +2,13 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - ./externalsecret.yaml
   - ./helmrelease.yaml
-  - ./rbac.yaml
 configMapGenerator:
-  - name: k8s-gateway-configmap
+  - name: glauth-config-tpl
     files:
-      - ./resources/Corefile
+      - ./resources/groups.toml
+      - ./resources/server.toml
+      - ./resources/users.toml
 generatorOptions:
   disableNameSuffixHash: true

@@ -27,6 +27,8 @@ spec:
         type: cronjob
         cronjob:
           schedule: "@daily"
+          timeZone: ${TIMEZONE}
+          concurrencyPolicy: Forbid
           successfulJobsHistory: 1
           failedJobsHistory: 1
         containers:
@@ -44,12 +46,12 @@ spec:
               capabilities:
                 drop:
                   - ALL
-        pod:
-          dnsConfig:
-            options:
-              - name: ndots
-                value: "1"
-          securityContext:
-            runAsUser: 568
-            runAsGroup: 568
-            runAsNonRoot: true
+    defaultPodOptions:
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "1"
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568

@@ -41,6 +41,7 @@ spec:
                 sabnzbd.media.svc.cluster.local,
                 {{ .Release.Name }}.${PUBLIC_DOMAIN},
                 sab.${PUBLIC_DOMAIN}
+              TZ: ${TIMEZONE}
             envFrom:
               - secretRef:
                   name: sabnzbd-secret
@@ -63,15 +64,15 @@ spec:
               capabilities:
                 drop:
                   - ALL
-        pod:
-          securityContext:
-            runAsUser: 568
-            runAsGroup: 568
-            runAsNonRoot: true
-            fsGroup: 568
-            fsGroupChangePolicy: OnRootMismatch
-            supplementalGroups:
-              - 65536
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroup: 568
+        fsGroupChangePolicy: OnRootMismatch
+        supplementalGroups:
+          - 65536
     ingress:
       app:
         className: internal
@@ -94,9 +95,13 @@ spec:
     persistence:
       config:
         existingClaim: *app
+      logs:
+        type: emptyDir
+        globalMounts:
+          - path: /config/logs
       media:
         type: nfs
-        server: nas.${PUBLIC_DOMAIN}
+        server: nas.${PRIVATE_DOMAIN}
         path: /volume1/PLEX
       tmp:
         type: emptyDir

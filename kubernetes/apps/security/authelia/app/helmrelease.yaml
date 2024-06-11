@@ -56,7 +56,7 @@ spec:
                 custom: true
                 spec:
                   httpGet:
-                    path: /api/health
+                    path: &path /api/health
                     port: &port 9091
                   initialDelaySeconds: 0
                   periodSeconds: 10
@@ -69,22 +69,23 @@ spec:
               capabilities:
                 drop:
                   - ALL
-        pod:
-          securityContext:
-            runAsUser: 568
-            runAsGroup: 568
-            runAsNonRoot: true
-          topologySpreadConstraints:
-            - maxSkew: 1
-              topologyKey: kubernetes.io/hostname
-              whenUnsatisfiable: DoNotSchedule
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/name: *app
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: *app
     ingress:
       app:
-        className: internal
+        className: external
         annotations:
+          gatus.io/path: *path
           hajimari.io/icon: mdi:shield-account
           hajimari.io/url: https://auth.${PUBLIC_DOMAIN}
           nginx.ingress.kubernetes.io/configuration-snippet: |

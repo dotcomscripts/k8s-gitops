@@ -13,16 +13,11 @@ spec:
           "type": "macvlan",
           "master": "bond0.99",
           "mode": "bridge",
-          "capabilities": {
-            "ips": true
-          },
           "ipam": {
             "type": "static",
             "routes": [
-              { "dst": "${LAN_INTERNAL_IP_CIDR}", "gw": "${LAN_IOT_GATEWAY_IP}" },
-              { "dst": "${LAN_VM_IP_CIDR}", "gw": "${LAN_IOT_GATEWAY_IP}" },
-              { "dst": "${LAN_IOT_IP_CIDR}", "gw": "${LAN_IOT_GATEWAY_IP}" },
-              { "dst": "${LAN_SERVICES_IP_CIDR}", "gw": "${LAN_IOT_GATEWAY_IP}" }
+              { "dst": "${NET_INTERNAL_CIDR}", "gw": "${NET_IOT_GATEWAY_IP}" },
+              { "dst": "${NET_IOT_CIDR}", "gw": "${NET_IOT_GATEWAY_IP}" }
             ]
           }
         }

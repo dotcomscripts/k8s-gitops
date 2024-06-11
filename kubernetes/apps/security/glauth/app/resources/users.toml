@@ -1,0 +1,18 @@
+[[users]]
+    name = "search"
+    uidnumber = 5000
+    primarygroup = 6500
+    passbcrypt = "{{ .GLAUTH_SEARCH_PASSWORD_BCRYPT }}"
+    [[users.capabilities]]
+        action = "search"
+        object = "*"
+
+[[users]]
+    name = "brandt"
+    mail = "{{ .GLAUTH_BRANDT_EMAIL }}"
+    givenname = "Brandt"
+    sn = "Youmans"
+    uidnumber = 5001
+    primarygroup = 6502
+    othergroups = [ 6501 ]
+    passbcrypt = "{{ .GLAUTH_BRANDT_PASSWORD_BCRYPT }}"
