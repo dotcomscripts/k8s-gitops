@@ -2,22 +2,15 @@
 
 ## Talos
 
-### Create Talos Secrets
+### Generate Talos Secrets
 
 ```
-task talos:gensecret
-task talos:genconfig
+task talos:generate-secret
+task talos:generate-config
 ```
 
-### Boostrap Talos
+### Boostrap Talos 🍿
 
 ```
 task talos:bootstrap
-task talos:kubeconfig
-```
-
-### Bootstrap Extras
-
-```
-task talos:apply-extras
 ```

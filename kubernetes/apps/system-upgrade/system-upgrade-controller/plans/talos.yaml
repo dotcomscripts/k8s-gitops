@@ -35,8 +35,6 @@ spec:
         valueFrom:
           fieldRef:
             fieldPath: status.hostIP
-      - name: IMAGE_SCHEMATIC
-        value: 32ae5573011296d08d26d072bfe1b3d7d46f2f44990fbe0809e790a4ab3f5917
     args:
       - --nodes=$(NODE_IP)
       - health
@@ -46,6 +44,6 @@ spec:
     args:
       - --nodes=$(NODE_IP)
       - upgrade
-      - --image=factory.talos.dev/installer/$(IMAGE_SCHEMATIC):$(SYSTEM_UPGRADE_PLAN_LATEST_VERSION)
+      - --image=factory.talos.dev/installer/${TALOS_SCHEMATIC_ID}:$(SYSTEM_UPGRADE_PLAN_LATEST_VERSION)
       - --preserve=true
       - --wait=false
