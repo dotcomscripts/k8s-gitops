@@ -37,7 +37,7 @@ nodes:
       - interface: bond0
         bond:
           mode: 802.3ad
-          miimon: 100
+          miimon: 1000
           deviceSelectors:
             - hardwareAddr: 94:c6:91:1e:40:5c
               driver: e1000e
