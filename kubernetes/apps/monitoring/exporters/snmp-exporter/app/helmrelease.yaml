@@ -31,6 +31,6 @@ spec:
         - name: nas
           auth: [public_v1]
           module: [synology]
-          target: nas.${PRIVATE_DOMAIN}
+          target: nas.${INTERNAL_DOMAIN}
       path: /snmp
       scrapeTimeout: 10s

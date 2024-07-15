@@ -10,5 +10,5 @@ spec:
   targets:
     staticConfig:
       static:
-        - unifi.${PRIVATE_DOMAIN}
-        - nas.${PRIVATE_DOMAIN}
+        - unifi.${INTERNAL_DOMAIN}
+        - nas.${INTERNAL_DOMAIN}

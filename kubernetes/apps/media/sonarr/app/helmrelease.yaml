@@ -101,7 +101,7 @@ spec:
           - path: /config/logs
       media:
         type: nfs
-        server: nas.${PRIVATE_DOMAIN}
+        server: nas.${INTERNAL_DOMAIN}
         path: /volume1/PLEX
       tmp:
         type: emptyDir
