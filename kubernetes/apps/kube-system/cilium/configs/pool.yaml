@@ -4,5 +4,5 @@ kind: CiliumLoadBalancerIPPool
 metadata:
   name: lb-pool
 spec:
-  cidrs:
+  blocks:
     - cidr: ${NET_SERVICES_CIDR}
