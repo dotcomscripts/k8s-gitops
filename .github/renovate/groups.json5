@@ -2,12 +2,19 @@
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   packageRules: [
     {
+      description: ["1Password Connect Group"],
+      groupName: "1Password Connnect",
+      matchPackagePatterns: ["1password/connect"],
+      matchDatasources: ["docker"],
+      group: {
+        commitMessageTopic: "{{{groupName}}} group",
+      },
+      separateMinorPatch: true,
+    },
+    {
       description: ["Actions Runner Controller Group"],
       groupName: "Actions Runner Controller",
-      matchPackagePatterns: [
-        "gha-runner-scale-set-controller",
-        "gha-runner-scale-set",
-      ],
+      matchPackagePatterns: ["gha-runner-scale-set"],
       matchDatasources: ["docker", "helm"],
       group: {
         commitMessageTopic: "{{{groupName}}} group",
