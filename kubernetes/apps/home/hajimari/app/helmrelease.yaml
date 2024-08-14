@@ -36,7 +36,13 @@ spec:
       showGlobalBookmarks: false
       showAppUrls: true
       defaultEnable: true
-      defaultSearchProvider: DuckDuckGo
+      defaultSearchProvider: Brave
+      searchProviders:
+        - name: Brave
+          token: b
+          icon: simple-icons:brave
+          searchUrl: https://search.brave.com/search?q={query}
+          url: https://search.brave.com
       name: Dotcom
       namespaceSelector:
         any: true
