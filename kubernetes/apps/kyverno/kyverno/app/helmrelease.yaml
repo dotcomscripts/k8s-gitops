@@ -64,11 +64,6 @@ spec:
                 - delete
                 - get
                 - list
-      resources:
-        requests:
-          cpu: 10m
-        limits:
-          memory: 1Gi
       serviceMonitor:
         enabled: true
     cleanupController:

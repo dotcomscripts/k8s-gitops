@@ -65,11 +65,6 @@ spec:
           namespace: networking
           namespaceSelector:
             any: true
-      resources:
-        requests:
-          cpu: 10m
-        limits:
-          memory: 512Mi
       service:
         annotations:
           io.cilium/lb-ipam-ips: ${NET_SERVICES_INGRESS_IP_INT}
