@@ -30,6 +30,11 @@ trackers:
     required_seed_ratio: 1.01
     required_seed_days: 2.1
 
+  - name: fearnopeer
+    urls: ["fearnopeer.com"]
+    required_seed_ratio: 0
+    required_seed_days: 0
+
   - name: hd-space
     urls: ["hd-space.pw"]
     required_seed_ratio: 0
