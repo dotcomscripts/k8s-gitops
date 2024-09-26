@@ -44,19 +44,6 @@ spec:
               QBT_Preferences__WebUI__AuthSubnetWhitelist: 10.0.0.0/8
               QBT_Preferences__WebUI__LocalHostAuth: false
               TZ: ${TIMEZONE}
-            probes:
-              liveness: &probes
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /api/v2/app/version
-                    port: *port
-                  initialDelaySeconds: 0
-                  periodSeconds: 10
-                  timeoutSeconds: 1
-                  failureThreshold: 3
-              readiness: *probes
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
