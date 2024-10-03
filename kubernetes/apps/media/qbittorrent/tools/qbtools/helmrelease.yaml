@@ -43,9 +43,9 @@ spec:
               - --last-activity
               - --sites
               - --unregistered
-              - --server=qbittorrent.media.svc.cluster.local
-              - --port=8080
             env:
+              QBITTORRENT_HOST: qbittorrent.media.svc.cluster.local
+              QBITTORRENT_PORT: 8080
               TZ: *timeZone
             securityContext:
               allowPrivilegeEscalation: false
@@ -59,9 +59,8 @@ spec:
             args:
               - prune
               - --exclude-tag=expired
+              - --exclude-tag=added:24h
               - --include-tag=unregistered
-              - --server=qbittorrent.media.svc.cluster.local
-              - --port=8080
           expired:
             <<: *container
             args:
@@ -69,8 +68,6 @@ spec:
               - --exclude-category=manual
               - --exclude-tag=activity:24h
               - --include-tag=expired
-              - --server=qbittorrent.media.svc.cluster.local
-              - --port=8080
         pod:
           restartPolicy: OnFailure
           securityContext: &podSecurityContext
@@ -89,8 +86,6 @@ spec:
               - orphaned
               - --exclude-pattern="*_unpackerred"
               - --exclude-pattern="*/manual/*"
-              - --server=qbittorrent.media.svc.cluster.local
-              - --port=8080
         pod:
           restartPolicy: OnFailure
           securityContext:
@@ -105,9 +100,6 @@ spec:
             <<: *container
             args:
               - reannounce
-              - --process-seeding
-              - --server=qbittorrent.media.svc.cluster.local
-              - --port=8080
         pod:
           securityContext: *podSecurityContext
     persistence:
