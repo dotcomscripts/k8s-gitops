@@ -28,7 +28,7 @@ spec:
         envFrom:
           - secretRef:
               name: &secret grafana-secret
-    replicas: 1
+    replicas: 2
     env:
       GF_AUTH_GENERIC_OAUTH_TOKEN_URL: http://authelia.security.svc.cluster.local:9091/api/oidc/token
       GF_AUTH_GENERIC_OAUTH_API_URL: http://authelia.security.svc.cluster.local:9091/api/oidc/userinfo
