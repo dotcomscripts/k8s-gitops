@@ -28,7 +28,7 @@ spec:
         envFrom:
           - secretRef:
               name: &secret grafana-secret
-    replicas: 2
+    replicas: 1
     env:
       GF_AUTH_GENERIC_OAUTH_TOKEN_URL: http://authelia.security.svc.cluster.local:9091/api/oidc/token
       GF_AUTH_GENERIC_OAUTH_API_URL: http://authelia.security.svc.cluster.local:9091/api/oidc/userinfo
@@ -86,55 +86,7 @@ spec:
             disableDeletion: false
             editable: true
             options:
-              path: /var/lib/grafana/dashboards/default-folder
-          - name: flux
-            orgId: 1
-            folder: Flux
-            type: file
-            disableDeletion: false
-            editable: true
-            options:
-              path: /var/lib/grafana/dashboards/flux-folder
-          - name: kubernetes
-            orgId: 1
-            folder: Kubernetes
-            type: file
-            disableDeletion: false
-            editable: true
-            options:
-              path: /var/lib/grafana/dashboards/kubernetes-folder
-          - name: media
-            orgId: 1
-            folder: Media
-            type: file
-            disableDeletion: false
-            editable: true
-            options:
-              path: /var/lib/grafana/dashboards/media-folder
-          - name: nginx
-            orgId: 1
-            folder: Nginx
-            type: file
-            disableDeletion: false
-            editable: true
-            options:
-              path: /var/lib/grafana/dashboards/nginx-folder
-          - name: prometheus
-            orgId: 1
-            folder: Prometheus
-            type: file
-            disableDeletion: false
-            editable: true
-            options:
-              path: /var/lib/grafana/dashboards/prometheus-folder
-          - name: unifi
-            orgId: 1
-            folder: Unifi
-            type: file
-            disableDeletion: false
-            editable: true
-            options:
-              path: /var/lib/grafana/dashboards/unifi-folder
+              path: /var/lib/grafana/dashboards/default
     datasources:
       datasources.yaml:
         apiVersion: 1
@@ -153,7 +105,7 @@ spec:
             type: prometheus
             uid: prometheus
             access: proxy
-            url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+            url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/
             isDefault: true
     dashboards:
       default:
@@ -175,6 +127,11 @@ spec:
         dragonfly:
           url: https://raw.githubusercontent.com/dragonflydb/dragonfly/main/tools/local/monitoring/grafana/provisioning/dashboards/dashboard.json
           datasource: Prometheus
+        exportarr:
+          url: https://raw.githubusercontent.com/onedr0p/exportarr/master/examples/grafana/dashboard2.json
+          datasource:
+            - name: DS_PROMETHEUS
+              value: Prometheus
         external-dns:
           # renovate: depName="External-dns"
           gnetId: 15038
@@ -183,48 +140,6 @@ spec:
         external-secrets:
           url: https://raw.githubusercontent.com/external-secrets/external-secrets/main/docs/snippets/dashboard.json
           datasource: Prometheus
-        gatus:
-          url: https://raw.githubusercontent.com/TwiN/gatus/master/.examples/docker-compose-grafana-prometheus/grafana/provisioning/dashboards/gatus.json
-          datasource: Prometheus
-        node-exporter-full:
-          # renovate: depName="Node Exporter Full"
-          gnetId: 1860
-          revision: 37
-          datasource: Prometheus
-        node-feature-discovery:
-          url: https://raw.githubusercontent.com/kubernetes-sigs/node-feature-discovery/master/examples/grafana-dashboard.json
-          datasource: Prometheus
-        smartctl-exporter:
-          # renovate: depName="Dashboard for smartctl_exporter"
-          gnetId: 20204
-          revision: 1
-          datasource:
-            - name: DS_PROMETHEUS
-              value: Prometheus
-        speedtest-exporter:
-          # renovate: depName="Speedtest-Exporter Dashboard"
-          gnetId: 13665
-          revision: 4
-          datasource:
-            - name: DS_PROMETHEUS
-              value: Prometheus
-        synology-nas-details:
-          # renovate: depName="Synology NAS Details"
-          gnetId: 14284
-          revision: 9
-          datasource:
-            - name: DS_PROMETHEUS
-              value: Prometheus
-        volsync:
-          # removate: depNmae="VolSync Dashboard"
-          gnetId: 21356
-          revision: 1
-          datasource:
-            - name: DS_PROMETHEUS
-              value: Prometheus
-            - name: VAR_REPLICATIONDESTNAME
-              value: .*-rdst
-      flux:
         flux-cluster:
           url: https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/monitoring/configs/dashboards/cluster.json
           datasource: Prometheus
@@ -234,7 +149,9 @@ spec:
         flux-logs:
           url: https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/monitoring/configs/dashboards/logs.json
           datasource: Prometheus
-      kubernetes:
+        gatus:
+          url: https://raw.githubusercontent.com/TwiN/gatus/master/.examples/docker-compose-grafana-prometheus/grafana/provisioning/dashboards/gatus.json
+          datasource: Prometheus
         kubernetes-api-server:
           # renovate: depName="Kubernetes / System / API Server"
           gnetId: 15761
@@ -263,48 +180,61 @@ spec:
         kubernetes-pods:
           # renovate: depName="Kubernetes / Views / Pods"
           gnetId: 15760
-          revision: 29
+          revision: 31
           datasource: Prometheus
         kubernetes-volumes:
           # renovate: depName="K8s / Storage / Volumes / Cluster"
           gnetId: 11454
           revision: 14
           datasource: Prometheus
-      media:
-        exportarr:
-          url: https://raw.githubusercontent.com/onedr0p/exportarr/master/examples/grafana/dashboard2.json
-          datasource:
-            - name: DS_PROMETHEUS
-              value: Prometheus
-        overseerr-exporter:
-          url: https://raw.githubusercontent.com/WillFantom/overseerr-exporter/main/grafana/dashboard.json
-          datasource: Prometheus
-        qbittorrent-exporter:
-          url: https://raw.githubusercontent.com/esanchezm/prometheus-qbittorrent-exporter/master/grafana/dashboard.json
-          datasource:
-            - name: DS_PROMETHEUS
-              value: Prometheus
-        unpackerr:
-          # renovate: depName="Unpackerr"
-          gnetId: 18817
-          revision: 1
-          datasource:
-            - name: DS_PROMETHEUS
-              value: Prometheus
-      nginx:
         nginx:
           url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/grafana/dashboards/nginx.json
           datasource: Prometheus
         nginx-request-handling-performance:
           url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/grafana/dashboards/request-handling-performance.json
           datasource: Prometheus
-      prometheus:
+        node-exporter-full:
+          # renovate: depName="Node Exporter Full"
+          gnetId: 1860
+          revision: 37
+          datasource: Prometheus
+        node-feature-discovery:
+          url: https://raw.githubusercontent.com/kubernetes-sigs/node-feature-discovery/master/examples/grafana-dashboard.json
+          datasource: Prometheus
+        overseerr-exporter:
+          url: https://raw.githubusercontent.com/WillFantom/overseerr-exporter/main/grafana/dashboard.json
+          datasource: Prometheus
         prometheus:
           # renovate: depName="Prometheus"
           gnetId: 19105
           revision: 4
           datasource: Prometheus
-      unifi:
+        qbittorrent-exporter:
+          url: https://raw.githubusercontent.com/esanchezm/prometheus-qbittorrent-exporter/master/grafana/dashboard.json
+          datasource:
+            - name: DS_PROMETHEUS
+              value: Prometheus
+        smartctl-exporter:
+          # renovate: depName="Dashboard for smartctl_exporter"
+          gnetId: 20204
+          revision: 1
+          datasource:
+            - name: DS_PROMETHEUS
+              value: Prometheus
+        speedtest-exporter:
+          # renovate: depName="Speedtest-Exporter Dashboard"
+          gnetId: 13665
+          revision: 4
+          datasource:
+            - name: DS_PROMETHEUS
+              value: Prometheus
+        synology-nas-details:
+          # renovate: depName="Synology NAS Details"
+          gnetId: 14284
+          revision: 9
+          datasource:
+            - name: DS_PROMETHEUS
+              value: Prometheus
         unifi-insights:
           # renovate: depName="UniFi-Poller: Client Insights - Prometheus"
           gnetId: 11315
@@ -325,6 +255,20 @@ spec:
           gnetId: 11312
           revision: 9
           datasource: Prometheus
+        unpackerr:
+          # renovate: depName="Unpackerr"
+          gnetId: 18817
+          revision: 1
+          datasource:
+            - name: DS_PROMETHEUS
+              value: Prometheus
+        volsync:
+          # renovate: depName="VolSync Dashboard"
+          gnetId: 21356
+          revision: 3
+          datasource:
+            - name: DS_PROMETHEUS
+              value: Prometheus
     sidecar:
       dashboards:
         enabled: true
