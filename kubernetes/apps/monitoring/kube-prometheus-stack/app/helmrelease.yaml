@@ -52,42 +52,22 @@ spec:
               resources:
                 requests:
                   storage: 1Gi
-    kubelet:
-      enabled: true
-      serviceMonitor:
-        metricRelabelings:
-          - action: labeldrop
-            regex: (uid)
-          - action: labeldrop
-            regex: (id|name)
-          - action: drop
-            sourceLabels:
-              - __name__
-            regex: (rest_client_request_duration_seconds_bucket|rest_client_request_duration_seconds_sum|rest_client_request_duration_seconds_count)
     kubeApiServer:
-      enabled: true
       serviceMonitor:
-        metricRelabelings:
-          - action: drop
-            sourceLabels:
-              - __name__
-            regex: (apiserver|etcd|rest_client)_request(|_sli|_slo)_duration_seconds_bucket
-          - action: drop
-            sourceLabels:
-              - __name__
-            regex: (apiserver_response_sizes_bucket|apiserver_watch_events_sizes_bucket)
-    kubeControllerManager:
-      enabled: true
-      endpoints: &endpoints
-        - 10.0.5.2
+        selector:
+          k8s-app: kube-apiserver
+    kubeControllerManager: &kubeControllerManager
+      service:
+        selector:
+          k8s-app: kube-controller-manager
     kubeEtcd:
-      enabled: true
-      endpoints: *endpoints
+      <<: *kubeControllerManager # etcd runs on control plane nodes
     kubeProxy:
       enabled: false
     kubeScheduler:
-      enabled: true
-      endpoints: *endpoints
+      service:
+        selector:
+          k8s-app: kube-scheduler
     prometheus:
       ingress:
         enabled: true
@@ -106,12 +86,11 @@ spec:
       prometheusSpec:
         replicas: 1
         replicaExternalLabelName: __replica__
-        podMonitorSelector: &selector
-          matchLabels: null
-        probeSelector: *selector
-        ruleSelector: *selector
-        scrapeConfigSelector: *selector
-        serviceMonitorSelector: *selector
+        ruleselectorniluseshelmvalues: false
+        serviceMonitorSelectorNilUsesHelmValues: false
+        podMonitorSelectorNilUsesHelmValues: false
+        probeSelectorNilUsesHelmValues: false
+        scrapeConfigSelectorNilUsesHelmValues: false
         enableAdminAPI: true
         walCompression: true
         enableFeatures:
@@ -127,11 +106,9 @@ spec:
               resources:
                 requests:
                   storage: 20Gi
-    nodeExporter:
-      enabled: true
     prometheus-node-exporter:
       fullnameOverride: node-exporter
-      prometheus:
+      prometheus: &prometheus
         monitor:
           enabled: true
           relabelings:
@@ -150,22 +127,7 @@ spec:
         - deployments=[*]
         - persistentvolumeclaims=[*]
       prometheus:
-        monitor:
-          enabled: true
-          relabelings:
-            - action: replace
-              regex: (.*)
-              replacement: $1
-              sourceLabels:
-                - __meta_kubernetes_pod_node_name
-              targetLabel: kubernetes_node
+        <<: *prometheus
     grafana:
       enabled: false
       forceDeployDashboards: true
-      sidecar:
-        dashboards:
-          annotations:
-            grafana_folder: Kubernetes
-          multicluster:
-            etcd:
-              enabled: true
