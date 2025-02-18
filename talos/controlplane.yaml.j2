@@ -43,11 +43,6 @@ machine:
     image: factory.talos.dev/installer/8d69cb80518ea3baf4659d9946488a3bbe9f454df5707e5ee355b82917f495fe:{{ ENV.TALOS_VERSION }}
     wipe: false
   files:
-    - op: create
-      path: /etc/cri/conf.d/20-customization.part
-      content: |
-        [plugins."io.containerd.cri.v1.images"]
-          discard_unpacked_layers = false
     - op: overwrite
       path: /etc/nfsmount.conf
       permissions: 420
