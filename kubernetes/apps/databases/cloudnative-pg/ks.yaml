@@ -34,8 +34,8 @@ spec:
   dependsOn:
     - name: cloudnative-pg
       namespace: *namespace
-    - name: openebs
-      namespace: openebs-system
+    - name: democratic-csi
+      namespace: democratic-csi
   interval: 30m
   path: ./kubernetes/apps/databases/cloudnative-pg/cluster
   postBuild:
