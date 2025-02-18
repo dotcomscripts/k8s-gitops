@@ -13,8 +13,8 @@ spec:
       namespace: databases
     - name: onepassword-store
       namespace: external-secrets
-    - name: openebs
-      namespace: openebs-system
+    - name: democratic-csi
+      namespace: democratic-csi
   interval: 30m
   path: ./kubernetes/apps/media/radarr/app
   prune: true

@@ -30,11 +30,12 @@ spec:
   trigger:
     schedule: "15 */8 * * *"
   restic:
-    copyMethod: "${VOLSYNC_COPYMETHOD:=Direct}"
+    copyMethod: "${VOLSYNC_COPYMETHOD:=Snapshot}"
     pruneIntervalDays: 14
     repository: "${APP}-restic-secret"
     cacheCapacity: "${VOLSYNC_CACHE_CAPACITY:=2Gi}"
-    storageClassName: "${VOLSYNC_STORAGECLASS:=openebs-hostpath}"
+    storageClassName: "${VOLSYNC_STORAGECLASS:=democratic-csi-hostpath}"
+    volumeSnapshotClassName: "${VOLSYNC_SNAPSHOTCLASS:=csi-democratic-csi-hostpath}"
     accessModes: ["${VOLSYNC_ACCESSMODES:=ReadWriteOnce}"]
     moverSecurityContext:
       runAsUser: ${VOLSYNC_PUID:=568}
@@ -53,9 +54,10 @@ spec:
     manual: restore-once
   restic:
     repository: "${APP}-restic-secret"
-    copyMethod: Direct
+    copyMethod: Snapshot
     cacheCapacity: "${VOLSYNC_CACHE_CAPACITY:=2Gi}"
-    storageClassName: "${VOLSYNC_STORAGECLASS:=openebs-hostpath}"
+    storageClassName: "${VOLSYNC_STORAGECLASS:=democratic-csi-hostpath}"
+    volumeSnapshotClassName: "${VOLSYNC_SNAPSHOTCLASS:=csi-democratic-csi-hostpath}"
     accessModes: ["${VOLSYNC_ACCESSMODES:=ReadWriteOnce}"]
     capacity: "${VOLSYNC_CAPACITY:=5Gi}"
     moverSecurityContext:

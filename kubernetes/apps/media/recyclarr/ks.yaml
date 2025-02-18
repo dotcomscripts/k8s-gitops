@@ -13,8 +13,8 @@ spec:
   dependsOn:
     - name: onepassword-store
       namespace: external-secrets
-    - name: openebs
-      namespace: openebs-system
+    - name: democratic-csi
+      namespace: democratic-csi
     - name: volsync
       namespace: volsync-system
   interval: 30m

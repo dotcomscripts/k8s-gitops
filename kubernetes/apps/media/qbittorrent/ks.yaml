@@ -11,8 +11,8 @@ spec:
   components:
     - ../../../../components/volsync
   dependsOn:
-    - name: openebs
-      namespace: openebs-system
+    - name: democratic-csi
+      namespace: democratic-csi
     - name: volsync
       namespace: volsync-system
   interval: 30m

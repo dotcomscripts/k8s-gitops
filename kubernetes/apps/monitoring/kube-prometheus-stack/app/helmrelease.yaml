@@ -42,7 +42,7 @@ spec:
         storage:
           volumeClaimTemplate:
             spec:
-              storageClassName: openebs-hostpath
+              storageClassName: democratic-csi-hostpath
               resources:
                 requests:
                   storage: 1Gi
@@ -83,7 +83,7 @@ spec:
         storageSpec:
           volumeClaimTemplate:
             spec:
-              storageClassName: openebs-hostpath
+              storageClassName: democratic-csi-hostpath
               resources:
                 requests:
                   storage: 50Gi
