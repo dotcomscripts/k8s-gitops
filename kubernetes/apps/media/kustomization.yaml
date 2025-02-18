@@ -4,15 +4,15 @@ kind: Kustomization
 namespace: media
 components:
   - ../../components/common
-resources:
-  - ./autobrr/ks.yaml
-  - ./cross-seed/ks.yaml
-  - ./jellyseerr/ks.yaml
-  - ./plex/ks.yaml
-  - ./prowlarr/ks.yaml
-  - ./qbittorrent/ks.yaml
-  - ./radarr/ks.yaml
-  - ./recyclarr/ks.yaml
-  - ./sonarr/ks.yaml
-  - ./tautulli/ks.yaml
-  - ./unpackerr/ks.yaml
+resources: []
+  # - ./autobrr/ks.yaml
+  # - ./cross-seed/ks.yaml
+  # - ./jellyseerr/ks.yaml
+  # - ./plex/ks.yaml
+  # - ./prowlarr/ks.yaml
+  # - ./qbittorrent/ks.yaml
+  # - ./radarr/ks.yaml
+  # - ./recyclarr/ks.yaml
+  # - ./sonarr/ks.yaml
+  # - ./tautulli/ks.yaml
+  # - ./unpackerr/ks.yaml
