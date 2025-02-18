@@ -2,9 +2,9 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: ktwo-io
+  name: youmans-io
 spec:
-  secretName: ktwo-io-tls
+  secretName: youmans-io-tls
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer
