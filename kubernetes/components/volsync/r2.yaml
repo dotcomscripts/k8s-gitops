@@ -35,7 +35,7 @@ spec:
     repository: "${APP}-restic-secret"
     cacheCapacity: "${VOLSYNC_CACHE_CAPACITY:=2Gi}"
     storageClassName: "${VOLSYNC_STORAGECLASS:=openebs-hostpath}"
-    accessModes: ["${VOLSYNC_ACCESSMODES:=ReadWriteMany}"]
+    accessModes: ["${VOLSYNC_ACCESSMODES:=ReadWriteOnce}"]
     moverSecurityContext:
       runAsUser: ${VOLSYNC_PUID:=568}
       runAsGroup: ${VOLSYNC_PGID:=568}
@@ -56,7 +56,7 @@ spec:
     copyMethod: Direct
     cacheCapacity: "${VOLSYNC_CACHE_CAPACITY:=2Gi}"
     storageClassName: "${VOLSYNC_STORAGECLASS:=openebs-hostpath}"
-    accessModes: ["${VOLSYNC_ACCESSMODES:=ReadWriteMany}"]
+    accessModes: ["${VOLSYNC_ACCESSMODES:=ReadWriteOnce}"]
     capacity: "${VOLSYNC_CAPACITY:=5Gi}"
     moverSecurityContext:
       runAsUser: ${VOLSYNC_PUID:=568}
