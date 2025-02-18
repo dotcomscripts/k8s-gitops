@@ -8,10 +8,10 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.6.0
+      version: 3.7.1
       sourceRef:
         kind: HelmRepository
-        name: bjw-s-charts
+        name: bjw-s
         namespace: flux-system
   install:
     remediation:
@@ -39,9 +39,9 @@ spec:
                 sabnzbd.media.svc,
                 sabnzbd.media.svc.cluster,
                 sabnzbd.media.svc.cluster.local,
-                {{ .Release.Name }}.${PUBLIC_DOMAIN},
-                sab.${PUBLIC_DOMAIN}
-              TZ: ${TIMEZONE}
+                {{ .Release.Name }}.youmans.io,
+                sab.youmans.io
+              TZ: America/New_York
             envFrom:
               - secretRef:
                   name: sabnzbd-secret
@@ -58,12 +58,15 @@ spec:
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 10
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
+              capabilities: { drop: ["ALL"] }
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
@@ -71,38 +74,29 @@ spec:
         runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
-        supplementalGroups:
-          - 65536
+        supplementalGroups: [65536]
     ingress:
       app:
         className: internal
-        annotations:
-          hajimari.io/icon: mdi:download
-          hajimari.io/url: https://sab.${PUBLIC_DOMAIN}
         hosts:
-          - host: &host "{{ .Release.Name }}.${PUBLIC_DOMAIN}"
+          - host: "{{ .Release.Name }}.youmans.io"
             paths: &paths
               - path: /
                 service:
                   identifier: app
                   port: http
-          - host: &customHost sab.${PUBLIC_DOMAIN}
+          - host: sab.youmans.io
             paths: *paths
-        tls:
-          - hosts:
-              - *host
-              - *customHost
     persistence:
       config:
         existingClaim: *app
-      logs:
-        type: emptyDir
-        globalMounts:
-          - path: /config/logs
       media:
         type: nfs
-        server: nas.${INTERNAL_DOMAIN}
+        server: nas.internal
         path: /volume1/PLEX
+        globalMounts:
+          - path: /media/downloads/nzbs
+            subPath: downloads/nzbs
       tmp:
         type: emptyDir
     service:

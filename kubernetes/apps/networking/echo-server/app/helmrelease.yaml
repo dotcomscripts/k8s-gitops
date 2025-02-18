@@ -8,10 +8,10 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.6.0
+      version: 3.7.1
       sourceRef:
         kind: HelmRepository
-        name: bjw-s-charts
+        name: bjw-s
         namespace: flux-system
   install:
     remediation:
@@ -52,37 +52,22 @@ spec:
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
+              capabilities: { drop: ["ALL"] }
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
         runAsUser: 568
         runAsGroup: 568
-      topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: DoNotSchedule
-          labelSelector:
-            matchLabels:
-              app.kubernetes.io/name: *app
     ingress:
       app:
         className: external
-        annotations:
-          gatus.io/path: *path
-          hajimari.io/enable: "false"
         hosts:
-          - host: &host "{{ .Release.Name }}.${PUBLIC_DOMAIN}"
+          - host: "{{ .Release.Name }}.youmans.io"
             paths:
               - path: /
                 service:
                   identifier: app
                   port: http
-        tls:
-          - hosts:
-              - *host
     service:
       app:
         controller: *app
@@ -94,7 +79,3 @@ spec:
         serviceName: *app
         endpoints:
           - port: http
-            scheme: http
-            path: /metrics
-            interval: 1m
-            scrapeTimeout: 10s

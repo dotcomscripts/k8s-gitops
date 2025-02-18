@@ -8,10 +8,10 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.6.0
+      version: 3.7.1
       sourceRef:
         kind: HelmRepository
-        name: bjw-s-charts
+        name: bjw-s
         namespace: flux-system
   install:
     remediation:
@@ -30,7 +30,7 @@ spec:
           init-db:
             image:
               repository: ghcr.io/buroa/postgres-init
-              tag: 16
+              tag: 17
             envFrom: &envFrom
               - secretRef:
                   name: radarr-secret
@@ -38,7 +38,7 @@ spec:
           app:
             image:
               repository: ghcr.io/buroa/radarr-develop
-              tag: 5.19.0.9697@sha256:b920f18694e6129d26fae37612d0a770a413bf9923080d6a7858da2cb8d2a6da
+              tag: 5.19.1.9704@sha256:5b4527193866f475572fd2f2915948db51e6897b8f68401c63df1b9608f1bed5
             env:
               RADARR__APP__INSTANCENAME: Radarr
               RADARR__APP__THEME: dark
@@ -47,7 +47,7 @@ spec:
               RADARR__LOG__LEVEL: info
               RADARR__SERVER__PORT: &port 7878
               RADARR__UPDATE__BRANCH: develop
-              TZ: ${TIMEZONE}
+              TZ: America/New_York
             envFrom: *envFrom
             probes:
               liveness: &probes
@@ -65,9 +65,7 @@ spec:
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
+              capabilities: { drop: ["ALL"] }
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
@@ -75,33 +73,27 @@ spec:
         runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
-        supplementalGroups:
-          - 65536
+        supplementalGroups: [65536]
     ingress:
       app:
         className: internal
-        annotations:
-          hajimari.io/icon: mdi:filmstrip
         hosts:
-          - host: &host "{{ .Release.Name }}.${PUBLIC_DOMAIN}"
+          - host: "{{ .Release.Name }}.youmans.io"
             paths:
               - path: /
                 service:
                   identifier: app
                   port: http
-        tls:
-          - hosts:
-              - *host
     persistence:
       config:
         existingClaim: *app
-      logs:
+      config-logs:
         type: emptyDir
         globalMounts:
           - path: /config/logs
       media:
         type: nfs
-        server: nas.${INTERNAL_DOMAIN}
+        server: nas.internal
         path: /volume1/PLEX
       tmp:
         type: emptyDir

@@ -3,10 +3,7 @@
   extends: [
     "config:recommended",
     "docker:enableMajor",
-    "helpers:pinGitHubActionDigests",
-    "replacements:k8s-registry-move",
     ":automergeBranch",
-    ":automergeDigest",
     ":disableRateLimiting",
     ":dependencyDashboard",
     ":gitSignOff",
@@ -15,7 +12,6 @@
     ":timezone(America/New_York)",
     "github>dotcomscripts/k8s-gitops//.github/renovate/allowedVersions.json5",
     "github>dotcomscripts/k8s-gitops//.github/renovate/autoMerge.json5",
-    "github>dotcomscripts/k8s-gitops//.github/renovate/commitMessage.json5",
     "github>dotcomscripts/k8s-gitops//.github/renovate/customManagers.json5",
     "github>dotcomscripts/k8s-gitops//.github/renovate/grafanaDashboards.json5",
     "github>dotcomscripts/k8s-gitops//.github/renovate/groups.json5",
@@ -28,7 +24,6 @@
   rebaseWhen: "conflicted",
   assigneesFromCodeOwners: true,
   reviewersFromCodeOwners: true,
-  ignorePaths: ["**/*.sops.*", "**/resources/**"],
   flux: {
     fileMatch: ["(^|/)kubernetes/.+\\.ya?ml$"],
   },
@@ -36,10 +31,6 @@
     fileMatch: ["(^|/)kubernetes/.+\\.ya?ml$"],
   },
   kubernetes: {
-    fileMatch: [
-      "(^|/).taskfiles/.+\\.ya?ml$",
-      "(^|/)talos/.+\\.ya?ml$",
-      "(^|/)kubernetes/.+\\.ya?ml$",
-    ],
+    fileMatch: ["(^|/)kubernetes/.+\\.ya?ml$"],
   },
 }

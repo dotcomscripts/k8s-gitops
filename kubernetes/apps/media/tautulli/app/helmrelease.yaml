@@ -8,10 +8,10 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.6.0
+      version: 3.7.1
       sourceRef:
         kind: HelmRepository
-        name: bjw-s-charts
+        name: bjw-s
         namespace: flux-system
   install:
     remediation:
@@ -30,36 +30,25 @@ spec:
               repository: ghcr.io/buroa/tautulli
               tag: 2.15.1@sha256:efa120b7ece9953702d26b1127c299aa34ee3a46c083d0e89490862c8dc48044
             env:
-              TZ: ${TIMEZONE}
+              TAUTULLI__PORT: &port 8181
+              TZ: America/New_York
             probes:
               liveness: &probes
                 enabled: true
                 custom: true
                 spec:
                   httpGet:
-                    path: &path /status
-                    port: &port 8181
+                    path: /status
+                    port: *port
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
-            securityContext: &securityContext
+            securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
-          jbops:
-            image:
-              repository: registry.k8s.io/git-sync/git-sync
-              tag: v4.4.0@sha256:0330739a707a2969d617e859f096659ab6d149212658ac0ad7e550b59482ebf0
-            env:
-              GITSYNC_REPO: https://github.com/blacktwin/JBOPS
-              GITSYNC_REF: master
-              GITSYNC_PERIOD: 86400s # 1 day
-              GITSYNC_ROOT: /add-ons
-            securityContext: *securityContext
+              capabilities: { drop: ["ALL"] }
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
@@ -69,30 +58,22 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
     ingress:
       app:
-        className: external
-        annotations:
-          gatus.io/path: *path
-          hajimari.io/icon: mdi:chart-bar
+        className: internal
         hosts:
-          - host: &host "{{ .Release.Name }}.${PUBLIC_DOMAIN}"
+          - host: "{{ .Release.Name }}.youmans.io"
             paths:
               - path: /
                 service:
                   identifier: app
                   port: http
-        tls:
-          - hosts:
-              - *host
     persistence:
-      add-ons:
-        type: emptyDir
-      cache:
+      config:
+        existingClaim: *app
+      config-cache:
         existingClaim: tautulli-cache
         globalMounts:
           - path: /config/cache
-      config:
-        existingClaim: *app
-      logs:
+      config-logs:
         type: emptyDir
         globalMounts:
           - path: /config/logs

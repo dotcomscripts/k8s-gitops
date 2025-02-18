@@ -8,10 +8,10 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.6.0
+      version: 3.7.1
       sourceRef:
         kind: HelmRepository
-        name: bjw-s-charts
+        name: bjw-s
         namespace: flux-system
   install:
     remediation:
@@ -30,7 +30,7 @@ spec:
           init-db:
             image:
               repository: ghcr.io/buroa/postgres-init
-              tag: 16
+              tag: 17
             envFrom: &envFrom
               - secretRef:
                   name: gatus-secret
@@ -38,7 +38,7 @@ spec:
             dependsOn: init-db
             image:
               repository: ghcr.io/kiwigrid/k8s-sidecar
-              tag: 1.28.4@sha256:20caf4e241e1f9f9231527db5e75b735aa7b0da7bee3d262cbe369bb9b33469f
+              tag: 1.30.0@sha256:9a326271c439b6f9e174f3b48ed132bbff71c00592c7dbd072ccdc334445bde2
             env:
               FOLDER: /config
               LABEL: gatus.io/enabled
@@ -51,12 +51,12 @@ spec:
           app:
             image:
               repository: ghcr.io/twin/gatus
-              tag: v5.15.0@sha256:45686324db605e57dfa8b0931d8d57fe06298f52685f06aa9654a1f710d461bb
+              tag: v5.16.0@sha256:bb738c87cf2e2a08b8fff180cfc433e7b8b87bb1779c1fb1b00f8b748673e3c3
             env:
               GATUS_WEB_PORT: &port 80
               GATUS_CONFIG_PATH: /config
               GATUS_DELAY_START_SECONDS: 5
-              TZ: ${TIMEZONE}
+              TZ: America/New_York
             envFrom: *envFrom
             probes:
               liveness: &probes
@@ -64,7 +64,7 @@ spec:
                 custom: true
                 spec:
                   httpGet:
-                    path: &path /health
+                    path: /health
                     port: *port
                   initialDelaySeconds: 0
                   periodSeconds: 10
@@ -74,14 +74,8 @@ spec:
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
+              capabilities: { drop: ["ALL"] }
     defaultPodOptions:
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
       securityContext:
         runAsNonRoot: true
         runAsUser: 568
@@ -89,23 +83,15 @@ spec:
     ingress:
       app:
         className: external
-        annotations:
-          gatus.io/path: *path
-          hajimari.io/icon: simple-icons:statuspage
-          hajimari.io/url: https://status.${PUBLIC_DOMAIN}
         hosts:
-          - host: &host "{{ .Release.Name }}.${PUBLIC_DOMAIN}"
+          - host: "{{ .Release.Name }}.youmans.io"
             paths: &paths
               - path: /
                 service:
                   identifier: app
                   port: http
-          - host: &customHost status.${PUBLIC_DOMAIN}
+          - host: status.youmans.io
             paths: *paths
-        tls:
-          - hosts:
-              - *host
-              - *customHost
     persistence:
       config:
         type: emptyDir
@@ -130,7 +116,3 @@ spec:
         serviceName: *app
         endpoints:
           - port: http
-            scheme: http
-            path: /metrics
-            interval: 1m
-            scrapeTimeout: 10s

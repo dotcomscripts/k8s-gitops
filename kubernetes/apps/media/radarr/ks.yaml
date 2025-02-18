@@ -2,20 +2,26 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: cluster-apps-radarr
-  namespace: flux-system
+  name: &app radarr
+  namespace: &namespace media
 spec:
-  targetNamespace: media
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
   dependsOn:
-    - name: cluster-apps-cloudnative-pg-cluster
-    - name: cluster-apps-external-secrets-stores
-    - name: cluster-apps-democratic-csi-local-hostpath
+    - name: cloudnative-pg-cluster
+      namespace: databases
+    - name: onepassword-store
+      namespace: external-secrets
+    - name: democratic-csi
+      namespace: democratic-csi
+  interval: 30m
   path: ./kubernetes/apps/media/radarr/app
   prune: true
   sourceRef:
     kind: GitRepository
-    name: k8s-gitops
-  wait: true
-  interval: 30m
-  retryInterval: 1m
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: *namespace
   timeout: 5m
+  wait: true

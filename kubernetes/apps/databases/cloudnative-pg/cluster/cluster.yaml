@@ -5,11 +5,11 @@ metadata:
   name: postgres
 spec:
   instances: 1
-  imageName: ghcr.io/cloudnative-pg/postgresql:16.6-27
+  imageName: ghcr.io/cloudnative-pg/postgresql:${POSTGRESQL_VERSION}
   primaryUpdateStrategy: unsupervised
   storage:
     size: 20Gi
-    storageClass: ${CLUSTER_STORAGE_HOSTPATH}
+    storageClass: democratic-csi-hostpath
   superuserSecret:
     name: cloudnative-pg-secret
   enableSuperuserAccess: true
@@ -17,14 +17,11 @@ spec:
     parameters:
       max_connections: "200"
       shared_buffers: 256MB
-  nodeMaintenanceWindow:
-    inProgress: false
-    reusePVC: true
+  resources:
+    limits:
+      hugepages-2Mi: 2Gi # Requires sysctl set on the host
   monitoring:
     enablePodMonitor: true
-  inheritedMetadata:
-    annotations:
-      kyverno.io/exclude: "true"
   backup:
     retentionPolicy: 30d
     barmanObjectStore: &barmanObjectStore
@@ -34,7 +31,7 @@ spec:
         compression: bzip2
         maxParallel: 8
       destinationPath: s3://barman-nnxw73pk/
-      endpointURL: https://${SECRET_CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
+      endpointURL: https://3cb7f302f39808f599c8266fce4ea8b8.r2.cloudflarestorage.com
       # Note: serverName version needs to be inclemented
       # when recovering from an existing cnpg cluster
       serverName: postgres-v3
@@ -47,12 +44,12 @@ spec:
           key: AWS_SECRET_ACCESS_KEY
   # # Note: previousCluster needs to be set to the name of the previous
   # # cluster when recovering from an existing cnpg cluster
-  # bootstrap:
-  #   recovery:
-  #     source: &previousCluster postgres-v2
+  bootstrap:
+    recovery:
+      source: &previousCluster postgres-v3
   # # Note: externalClusters is needed when recovering from an existing cnpg cluster
-  # externalClusters:
-  #   - name: *previousCluster
-  #     barmanObjectStore:
-  #       <<: *barmanObjectStore
-  #       serverName: *previousCluster
+  externalClusters:
+    - name: *previousCluster
+      barmanObjectStore:
+        <<: *barmanObjectStore
+        serverName: *previousCluster

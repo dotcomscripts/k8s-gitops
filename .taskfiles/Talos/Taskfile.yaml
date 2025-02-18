@@ -1,122 +1,128 @@
 ---
-version: "3"
-
-x-vars: &vars
-  TALOS_VERSION:
-    sh: yq 'select(document_index == 1).spec.postBuild.substitute.TALOS_VERSION' {{.KUBERNETES_DIR}}/apps/system-upgrade/system-upgrade-controller/ks.yaml
-  TALOS_SCHEMATIC_ID:
-    sh: yq 'select(document_index == 1).spec.postBuild.substitute.TALOS_SCHEMATIC_ID' {{.KUBERNETES_DIR}}/apps/system-upgrade/system-upgrade-controller/ks.yaml
-  KUBERNETES_VERSION:
-    sh: yq 'select(document_index == 1).spec.postBuild.substitute.KUBERNETES_VERSION' {{.KUBERNETES_DIR}}/apps/system-upgrade/system-upgrade-controller/ks.yaml
-  CONTROLLER:
-    sh: talosctl config info --output json | jq --raw-output '.endpoints[]' | shuf -n 1
+version: '3'
 
 vars:
-  TALHELPER_SECRET_FILE: '{{.TALOS_DIR}}/talsecret.sops.yaml'
-  TALHELPER_CONFIG_FILE: '{{.TALOS_DIR}}/talconfig.yaml'
+  SYSTEM_UPGRADE_KS: |-
+    '{{.ROOT_DIR}}/kubernetes/apps/system-upgrade/system-upgrade-controller/ks.yaml'
+
+env:
+  KUBERNETES_VERSION:
+    sh: yq '.spec.postBuild.substitute.KUBERNETES_VERSION | select(.)' {{.SYSTEM_UPGRADE_KS}}
+  TALOS_VERSION:
+    sh: yq '.spec.postBuild.substitute.TALOS_VERSION | select(.)' {{.SYSTEM_UPGRADE_KS}}
 
 tasks:
 
-  bootstrap:
-    desc: Bootstrap Talos
-    prompt: Bootstrap Talos on the cluster ... continue?
-    cmds:
-      - task: bootstrap-etcd
-      - task: fetch-kubeconfig
-      - task: bootstrap-apps
-
-  bootstrap-etcd:
-    desc: Bootstrap Etcd
-    cmd: until talosctl --nodes {{.CONTROLLER}} bootstrap; do sleep 10; done
-    vars: *vars
-    preconditions:
-      - talosctl config info >/dev/null 2>&1
-
-  fetch-kubeconfig:
-    desc: Fetch kubeconfig from Talos controllers
-    cmd: talosctl kubeconfig --nodes {{.CONTROLLER}} --force {{.KUBERNETES_DIR}}
-    vars: *vars
-    preconditions:
-      - talosctl config info >/dev/null 2>&1
-
-  bootstrap-apps:
-    desc: Bootstrap core apps needed for Talos
-    cmds:
-      - until kubectl wait --for=condition=Ready=False nodes --all --timeout=10m; do sleep 10; done
-      - helmfile --quiet --file {{.TALOS_DIR}}/apps/helmfile.yaml apply --skip-diff-on-install --suppress-diff
-      - until kubectl wait --for=condition=Ready nodes --all --timeout=10m; do sleep 10; done
-    env:
-      CLUSTER_POD_CIDR:
-        sh: yq '.data.CLUSTER_POD_CIDR' {{.KUBERNETES_DIR}}/flux/vars/cluster-settings.yaml
-      KUBERNETES_DIR: '{{.KUBERNETES_DIR}}'
-    preconditions:
-      - talosctl config info >/dev/null 2>&1
-      - test -f {{.TALOS_DIR}}/apps/helmfile.yaml
-
-  upgrade:
-    desc: Upgrade Talos on a node
-    prompt: Upgrade Talos node {{.node}} ... continue?
-    cmd: talosctl --nodes {{.node}} upgrade --image=factory.talos.dev/installer/{{.TALOS_SCHEMATIC_ID}}:{{.TALOS_VERSION}} --preserve=true
-    vars: *vars
+  apply-node:
+    desc: Apply Talos config to a node [NODE=required] [MODE=auto]
+    cmd: |-
+      minijinja-cli {{.TALOS_DIR}}/{{.MACHINE_TYPE}}.yaml.j2 \
+        | op inject \
+        | talosctl --nodes {{.NODE}} apply-config \
+          --mode {{.MODE}} \
+          --config-patch @{{.TALOS_DIR}}/{{.MACHINE_TYPE}}/{{.NODE}}.yaml \
+          --file /dev/stdin
+    vars:
+      MODE: '{{.MODE | default "auto"}}'
+      MACHINE_TYPE:
+        sh: talosctl --nodes {{.NODE}} get machinetypes --output=jsonpath='{.spec}'
     requires:
-      vars: ["node"]
+      vars: [NODE]
     preconditions:
-      - test -f {{.TALOS_DIR}}/clusterconfig/talosconfig
-      - talosctl config info >/dev/null 2>&1
-      - talosctl --nodes {{.node}} get machineconfig >/dev/null 2>&1
+      - op user get --me
+      - test -f {{.TALOS_DIR}}/{{.MACHINE_TYPE}}.yaml.j2
+      - test -f {{.TALOS_DIR}}/{{.MACHINE_TYPE}}/{{.NODE}}.yaml
+      - test -f {{.TALOS_DIR}}/talosconfig
+      - which minijinja-cli op talosctl
+
+  upgrade-node:
+    desc: Upgrade Talos on a single node [NODE=required]
+    cmd: talosctl --nodes {{.NODE}} upgrade --image={{.TALOS_IMAGE}} --timeout=10m
+    vars:
+      MACHINE_TYPE:
+        sh: talosctl --nodes {{.NODE}} get machinetypes --output=jsonpath='{.spec}'
+      TALOS_IMAGE:
+        sh: minijinja-cli {{.TALOS_DIR}}/{{.MACHINE_TYPE}}.yaml.j2 | yq '.machine.install.image'
+    requires:
+      vars: [NODE]
+    preconditions:
+      - talosctl config info
+      - talosctl --nodes {{.NODE}} get machineconfig
+      - test -f {{.TALOS_DIR}}/{{.MACHINE_TYPE}}.yaml.j2
+      - test -f {{.TALOS_DIR}}/{{.MACHINE_TYPE}}/{{.NODE}}.yaml
+      - test -f {{.TALOS_DIR}}/talosconfig
+      - which minijinja-cli talosctl yq
 
   upgrade-k8s:
-    desc: Upgrade Kubernetes
-    cmd: talosctl --nodes {{.CONTROLLER}} upgrade-k8s --to {{.KUBERNETES_VERSION}}
-    vars: *vars
-    preconditions:
-      - test -f {{.TALOS_DIR}}/clusterconfig/talosconfig
-      - talosctl config info >/dev/null 2>&1
-      - talosctl --nodes {{.CONTROLLER}} get machineconfig >/dev/null 2>&1
-
-  reset-node:
-    desc: Reset a Talos node
-    prompt: Reset Talos node {{.node}} ... continue?
-    cmd: talosctl reset --nodes {{.node}} --system-labels-to-wipe STATE --system-labels-to-wipe EPHEMERAL --graceful=false --reboot
-    requires:
-      vars: ["node"]
-    preconditions:
-      - test -f {{.TALOS_DIR}}/clusterconfig/talosconfig
-      - talosctl config info >/dev/null 2>&1
-      - talosctl --nodes {{.node}} get machineconfig >/dev/null 2>&1
-
-  reset-cluster:
-    desc: Reset all the Talos nodes
-    prompt: Reset Talos nodes {{.nodes}} ... continue?
-    cmd: talosctl reset --nodes {{.nodes}} --system-labels-to-wipe STATE --system-labels-to-wipe EPHEMERAL --graceful=false --reboot
+    desc: Upgrade Kubernetes across the whole cluster
+    cmd: talosctl --nodes {{.RANDOM_CONTROLLER}} upgrade-k8s --to $KUBERNETES_VERSION
     vars:
-      nodes:
+      RANDOM_CONTROLLER:
+        sh: talosctl config info --output json | jq --raw-output '.endpoints[]' | shuf -n 1
+    preconditions:
+      - talosctl config info
+      - talosctl --nodes {{.RANDOM_CONTROLLER}} get machineconfig
+      - test -f {{.TALOS_DIR}}/talosconfig
+      - which jq talosctl
+
+  reboot-node:
+    desc: Reboot Talos on a single node [NODE=required] [MODE=default]
+    cmd: talosctl --nodes {{.NODE}} reboot --mode={{.MODE}}
+    vars:
+      MODE: '{{.MODE | default "default"}}'
+    requires:
+      vars: [NODE]
+    preconditions:
+      - talosctl config info
+      - talosctl --nodes {{.NODE}} get machineconfig
+      - test -f {{.TALOS_DIR}}/talosconfig
+      - which talosctl
+
+  shutdown-cluster:
+    desc: Shutdown Talos across the whole cluster
+    prompt: Shutdown the Talos cluster ... continue?
+    cmd: talosctl --nodes {{.NODES}} shutdown --force
+    vars:
+      NODES:
         sh: talosctl config info --output json | jq --join-output '[.nodes[]] | join(",")'
     preconditions:
-      - test -f {{.TALOS_DIR}}/clusterconfig/talosconfig
-      - talosctl config info >/dev/null 2>&1
-      - talosctl --nodes {{.nodes}} get machineconfig >/dev/null 2>&1
+      - talosctl config info
+      - talosctl --nodes {{.NODES}} get machineconfig
+      - test -f {{.TALOS_DIR}}/talosconfig
+      - which jq talosctl
 
-  generate-secret:
-    desc: Generate Talos secret
-    prompt: This will overwrite the existing secret ... continue?
-    dir: '{{.TALOS_DIR}}'
-    cmds:
-      - talhelper gensecret > {{.TALHELPER_SECRET_FILE}}
-      - sops --encrypt --in-place {{.TALHELPER_SECRET_FILE}}
+  reset-node:
+    desc: Reset Talos on a single node [NODE=required]
+    prompt: Reset Talos node '{{.NODE}}' ... continue?
+    cmd: talosctl --nodes {{.NODE}} reset --graceful=false
+    requires:
+      vars: [NODE]
     preconditions:
-      - test -f {{.TALHELPER_CONFIG_FILE}}
+      - talosctl config info
+      - talosctl --nodes {{.NODE}} get machineconfig
+      - test -f {{.TALOS_DIR}}/talosconfig
+      - which talosctl
 
-  generate-config:
-    desc: Generate Talos config
-    dir: '{{.TALOS_DIR}}'
-    cmd: talhelper genconfig
+  reset-cluster:
+    desc: Reset Talos across the whole cluster
+    prompt: Reset the Talos cluster ... continue?
+    cmd: talosctl --nodes {{.NODES}} reset --graceful=false
+    vars:
+      NODES:
+        sh: talosctl config info --output json | jq --join-output '[.nodes[]] | join(",")'
     preconditions:
-      - test -f {{.TALHELPER_CONFIG_FILE}}
+      - talosctl config info
+      - talosctl --nodes {{.NODES}} get machineconfig
+      - test -f {{.TALOS_DIR}}/talosconfig
+      - which jq talosctl
 
-  apply-config:
-    desc: Apply Talos config to the nodes
-    dir: '{{.TALOS_DIR}}'
-    cmd: talhelper gencommand apply | bash
+  kubeconfig:
+    desc: Generate the kubeconfig for a Talos cluster
+    cmd: talosctl kubeconfig --nodes {{.RANDOM_CONTROLLER}} --force {{.KUBERNETES_DIR}}
+    vars:
+      RANDOM_CONTROLLER:
+        sh: talosctl config info --output json | jq --raw-output '.endpoints[]' | shuf -n 1
     preconditions:
-      - test -f {{.TALHELPER_CONFIG_FILE}}
+      - talosctl config info
+      - test -f {{.TALOS_DIR}}/talosconfig
+      - which jq talosctl

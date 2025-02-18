@@ -2,21 +2,30 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: cluster-apps-tautulli
-  namespace: flux-system
+  name: &app tautulli
+  namespace: &namespace media
 spec:
-  targetNamespace: media
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  components:
+    - ../../../../components/volsync
   dependsOn:
-    - name: cluster-apps-plex
-    - name: cluster-apps-volsync
-    - name: cluster-apps-external-secrets-stores
-    - name: cluster-apps-democratic-csi-local-hostpath
+    - name: democratic-csi
+      namespace: democratic-csi
+    - name: volsync
+      namespace: volsync-system
+  interval: 30m
   path: ./kubernetes/apps/media/tautulli/app
+  postBuild:
+    substitute:
+      APP: *app
+      VOLSYNC_CAPACITY: 5Gi
   prune: true
   sourceRef:
     kind: GitRepository
-    name: k8s-gitops
-  wait: true
-  interval: 30m
-  retryInterval: 1m
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: *namespace
   timeout: 5m
+  wait: true

@@ -2,16 +2,25 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: cluster-apps-echo-server
-  namespace: flux-system
+  name: &app echo-server
+  namespace: &namespace networking
 spec:
-  targetNamespace: networking
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  components:
+    - ../../../../components/gatus
+  interval: 30m
   path: ./kubernetes/apps/networking/echo-server/app
+  postBuild:
+    substitute:
+      APP: *app
+      GATUS_PATH: /healthz
   prune: true
   sourceRef:
     kind: GitRepository
-    name: k8s-gitops
-  wait: true
-  interval: 30m
-  retryInterval: 1m
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: *namespace
   timeout: 5m
+  wait: true

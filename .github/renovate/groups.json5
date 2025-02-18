@@ -9,7 +9,6 @@
       group: {
         commitMessageTopic: "{{{groupName}}} group",
       },
-      separateMinorPatch: true,
     },
     {
       description: ["Actions Runner Controller Group"],
@@ -19,48 +18,24 @@
       group: {
         commitMessageTopic: "{{{groupName}}} group",
       },
-      separateMinorPatch: true,
     },
     {
-      description: ["Dragonfly Operator Group"],
-      groupName: "Dragonfly Operator",
-      matchPackagePatterns: ["dragonfly(?:db)?.operator"],
-      matchDatasources: ["docker", "github-releases"],
+      description: ["Flux Operator Group"],
+      groupName: "Flux Operator",
+      matchPackagePatterns: ["flux-operator", "flux-instance"],
+      matchDatasources: ["docker"],
       group: {
         commitMessageTopic: "{{{groupName}}} group",
       },
-      separateMinorPatch: true,
     },
     {
-      description: ["Flux Group"],
-      groupName: "Flux",
-      matchPackagePatterns: ["fluxcd"],
-      matchDatasources: ["docker", "github-tags"],
-      versioning: "semver",
-      group: {
-        commitMessageTopic: "{{{groupName}}} group",
-      },
-      separateMinorPatch: true,
-    },
-    {
-      description: ["Intel-Device-Plugins Group"],
+      description: ["Intel Device Plugins Group"],
       groupName: "Intel-Device-Plugins",
       matchPackagePatterns: ["intel-device-plugins"],
       matchDatasources: ["helm"],
       group: {
         commitMessageTopic: "{{{groupName}}} group",
       },
-      separateMinorPatch: true,
-    },
-    {
-      description: ["Talos Group"],
-      groupName: "Talos",
-      matchPackagePatterns: ["siderolabs/installer", "siderolabs/talosctl"],
-      matchDatasources: ["docker"],
-      group: {
-        commitMessageTopic: "{{{groupName}}} group",
-      },
-      separateMinorPatch: true,
     },
   ],
 }

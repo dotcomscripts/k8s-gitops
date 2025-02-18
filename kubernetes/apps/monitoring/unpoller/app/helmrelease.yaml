@@ -8,10 +8,10 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.6.0
+      version: 3.7.1
       sourceRef:
         kind: HelmRepository
-        name: bjw-s-charts
+        name: bjw-s
         namespace: flux-system
   install:
     remediation:
@@ -32,9 +32,9 @@ spec:
               repository: ghcr.io/unpoller/unpoller
               tag: v2.14.1@sha256:9ba73b1793ef332ae9b4b719ef0fc09f231d6276bc7b721cbb47961ed7792961
             env:
-              TZ: ${TIMEZONE}
+              TZ: America/New_York
               UP_UNIFI_DEFAULT_ROLE: k8s-gitops
-              UP_UNIFI_DEFAULT_URL: https://unifi.${INTERNAL_DOMAIN}
+              UP_UNIFI_DEFAULT_URL: https://unifi.internal
               UP_UNIFI_DEFAULT_VERIFY_SSL: false
               UP_INFLUXDB_DISABLE: true
             envFrom:
@@ -48,14 +48,8 @@ spec:
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
+              capabilities: { drop: ["ALL"] }
     defaultPodOptions:
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
       securityContext:
         runAsNonRoot: true
         runAsUser: 568
@@ -71,7 +65,5 @@ spec:
         serviceName: *app
         endpoints:
           - port: http
-            scheme: http
-            path: /metrics
             interval: 2m # Unifi API only polls at 2m intervals
             scrapeTimeout: 10s

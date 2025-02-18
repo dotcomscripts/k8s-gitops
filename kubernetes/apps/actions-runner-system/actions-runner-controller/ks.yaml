@@ -2,37 +2,47 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: cluster-apps-actions-runner-controller
-  namespace: flux-system
+  name: &app actions-runner-controller
+  namespace: &namespace actions-runner-system
 spec:
-  targetNamespace: actions-runner-system
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
   dependsOn:
-    - name: cluster-apps-external-secrets-stores
+    - name: onepassword-store
+      namespace: external-secrets
+  interval: 30m
   path: ./kubernetes/apps/actions-runner-system/actions-runner-controller/app
   prune: true
   sourceRef:
     kind: GitRepository
-    name: k8s-gitops
-  wait: true
-  interval: 30m
-  retryInterval: 1m
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: *namespace
   timeout: 5m
+  wait: true
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: cluster-apps-actions-runner-controller-runner
-  namespace: flux-system
+  name: &app actions-runner-controller-runners
+  namespace: &namespace actions-runner-system
 spec:
-  targetNamespace: actions-runner-system
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
   dependsOn:
-    - name: cluster-apps-actions-runner-controller
-  path: ./kubernetes/apps/actions-runner-system/actions-runner-controller/runner
+    - name: actions-runner-controller
+      namespace: *namespace
+    - name: openebs
+      namespace: openebs-system
+  interval: 30m
+  path: ./kubernetes/apps/actions-runner-system/actions-runner-controller/runners
   prune: true
   sourceRef:
     kind: GitRepository
-    name: k8s-gitops
-  wait: true
-  interval: 30m
-  retryInterval: 1m
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: *namespace
   timeout: 5m
+  wait: true

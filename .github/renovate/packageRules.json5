@@ -7,11 +7,5 @@
       versioning: "loose",
       matchPackagePatterns: ["plex"],
     },
-    {
-      description: ["Custom schedule for frequently updated packages"],
-      matchDatasources: ["docker", "helm"],
-      schedule: ["on the first day of the month"],
-      matchPackagePatterns: ["postgresql", "reloader"],
-    },
   ],
 }

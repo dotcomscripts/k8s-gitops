@@ -1,14 +1,40 @@
 ---
-version: "3"
+version: '3'
 
 tasks:
 
-  k8s:
-    desc: Bootstrap K8s from start to finish
+  talos:
+    desc: Bootstrap Talos
+    prompt: Bootstrap Talos ...?
     cmds:
-      - task: :talos:bootstrap
-      - task: :rook:reset
-      - task: :flux:bootstrap
+      - until talosctl --nodes {{.RANDOM_CONTROLLER}} bootstrap; do sleep 5; done
+      - talosctl kubeconfig --nodes {{.RANDOM_CONTROLLER}} --force {{.KUBERNETES_DIR}}
+    vars:
+      RANDOM_CONTROLLER:
+        sh: talosctl config info --output json | jq --raw-output '.endpoints[]' | shuf -n 1
     preconditions:
-      - test -f {{.KUBERNETES_DIR}}/talosconfig
-      - talosctl config info >/dev/null 2>&1
+      - talosctl config info
+      - test -f {{.TALOS_DIR}}/talosconfig
+      - which jq talosctl
+
+  apps:
+    desc: Bootstrap Kubernetes Apps
+    prompt: Bootstrap Kubernetes Apps ...?
+    cmds:
+      - kubectl config set-cluster {{.CONTEXT}} --server https://{{.RANDOM_CONTROLLER}}:6443
+      - defer: talosctl kubeconfig --nodes {{.RANDOM_CONTROLLER}} --force {{.KUBERNETES_DIR}}
+      - until kubectl wait nodes --for=condition=Ready=False --all --timeout=10m; do sleep 5; done
+      - op inject --in-file {{.BOOTSTRAP_DIR}}/secrets.yaml.tpl | kubectl apply --server-side --filename -
+      - helmfile --file {{.BOOTSTRAP_DIR}}/helmfile.yaml apply --skip-diff-on-install --suppress-diff
+    vars:
+      CONTEXT:
+        sh: talosctl config info --output json | jq --raw-output '.context'
+      RANDOM_CONTROLLER:
+        sh: talosctl config info --output json | jq --raw-output '.endpoints[]' | shuf -n 1
+    preconditions:
+      - op user get --me
+      - talosctl config info
+      - test -f {{.TALOS_DIR}}/talosconfig
+      - test -f {{.BOOTSTRAP_DIR}}/helmfile.yaml
+      - test -f {{.BOOTSTRAP_DIR}}/secrets.yaml.tpl
+      - which helmfile jq kubectl op talosctl

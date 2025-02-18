@@ -11,7 +11,7 @@ spec:
       version: 0.23.0
       sourceRef:
         kind: HelmRepository
-        name: cloudnative-pg-charts
+        name: cloudnative-pg
         namespace: flux-system
   install:
     remediation:
@@ -22,9 +22,6 @@ spec:
       strategy: rollback
       retries: 3
   values:
-    config:
-      data:
-        INHERITED_ANNOTATIONS: kyverno.io/ignore
     crds:
       create: true
     monitoring:

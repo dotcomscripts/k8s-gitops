@@ -8,12 +8,11 @@ spec:
   chart:
     spec:
       chart: snapshot-controller
-      version: 3.0.6
+      version: 4.0.1
       sourceRef:
         kind: HelmRepository
-        name: piraeus-charts
+        name: piraeus
         namespace: flux-system
-  maxHistory: 2
   install:
     crds: CreateReplace
     remediation:
@@ -22,10 +21,10 @@ spec:
     cleanupOnFail: true
     crds: CreateReplace
     remediation:
+      strategy: rollback
       retries: 3
   values:
     controller:
-      args:
-        enableDistributedSnapshotting: true
+      replicaCount: 2
       serviceMonitor:
         create: true

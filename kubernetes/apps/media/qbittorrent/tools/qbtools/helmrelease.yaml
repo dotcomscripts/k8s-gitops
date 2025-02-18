@@ -8,10 +8,10 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.6.0
+      version: 3.7.1
       sourceRef:
         kind: HelmRepository
-        name: bjw-s-charts
+        name: bjw-s
         namespace: flux-system
   install:
     remediation:
@@ -25,9 +25,9 @@ spec:
     controllers:
       tagging:
         type: cronjob
-        cronjob: &cronjob
+        cronjob:
           schedule: "@hourly"
-          timeZone: &timeZone ${TIMEZONE}
+          timeZone: &timeZone America/New_York
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
           failedJobsHistory: 1
@@ -35,7 +35,7 @@ spec:
           tagging: &container
             image:
               repository: ghcr.io/buroa/qbtools
-              tag: v0.19.14@sha256:905617dfc1a8aa1510381d8e177cc5581a49bfa9d56f3f05e0574f6c83987d3c
+              tag: v0.19.15@sha256:4145020bab12b2ed892f548c2812c4979793def80dce5f907e49640329e54933
             args:
               - tagging
               - --added-on
@@ -50,69 +50,42 @@ spec:
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
+              capabilities: { drop: ["ALL"] }
         containers:
-          unregistered:
+          prune-unregistered:
             <<: *container
             args:
               - prune
               - --exclude-tag=expired
-              - --exclude-tag=added:24h
+              - --exclude-tag=added:1d
               - --include-tag=unregistered
-          expired:
+              - --with-data
+          prune-expired:
             <<: *container
             args:
               - prune
               - --exclude-category=manual
-              - --exclude-tag=activity:24h
+              - --exclude-tag=activity:1d
               - --include-tag=expired
+              - --with-data
         pod:
           restartPolicy: OnFailure
-          securityContext: &podSecurityContext
-            runAsNonRoot: true
-            runAsUser: 568
-            runAsGroup: 568
-      orphaned:
-        type: cronjob
-        cronjob:
-          <<: *cronjob
-          schedule: "@daily"
-        containers:
-          app:
-            <<: *container
-            args:
-              - orphaned
-              - --exclude-pattern="*_unpackerred"
-              - --exclude-pattern="*/manual/*"
-        pod:
-          restartPolicy: OnFailure
-          securityContext:
-            <<: *podSecurityContext
-            fsGroup: 568
-            fsGroupChangePolicy: OnRootMismatch
-            supplementalGroups:
-              - 65536
       reannounce:
         containers:
           app:
             <<: *container
             args:
               - reannounce
-        pod:
-          securityContext: *podSecurityContext
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568
     persistence:
       config:
         type: configMap
         name: qbtools-configmap
-        advancedMounts:
-          tagging:
-            tagging:
-              - path: /config/config.yaml
-                subPath: config.yaml
-                readOnly: true
-      media:
-        type: nfs
-        server: nas.${INTERNAL_DOMAIN}
-        path: /volume1/PLEX
+        globalMounts:
+          - path: /config/config.yaml
+            subPath: config.yaml
+            readOnly: true

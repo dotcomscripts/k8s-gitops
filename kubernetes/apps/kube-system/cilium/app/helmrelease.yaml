@@ -8,10 +8,10 @@ spec:
   chart:
     spec:
       chart: cilium
-      version: 1.16.5
+      version: 1.17.1
       sourceRef:
         kind: HelmRepository
-        name: cilium-charts
+        name: cilium
         namespace: flux-system
   install:
     remediation:
@@ -24,53 +24,3 @@ spec:
   valuesFrom:
     - kind: ConfigMap
       name: cilium-helm-values
-  values:
-    hubble:
-      enabled: true
-      metrics:
-        enabled:
-          - dns:query
-          - drop
-          - tcp
-          - flow
-          - port-distribution
-          - icmp
-          - http
-        serviceMonitor:
-          enabled: true
-        dashboards:
-          enabled: true
-      relay:
-        enabled: true
-        rollOutPods: true
-        prometheus:
-          serviceMonitor:
-            enabled: true
-      ui:
-        enabled: true
-        rollOutPods: true
-        ingress:
-          enabled: true
-          className: internal
-          annotations:
-            external-dns.alpha.kubernetes.io/target: internal.${PUBLIC_DOMAIN}
-            hajimari.io/icon: simple-icons:cilium
-          hosts:
-            - &host hubble.${PUBLIC_DOMAIN}
-          tls:
-            - hosts:
-                - *host
-    operator:
-      prometheus:
-        enabled: true
-        serviceMonitor:
-          enabled: true
-      dashboards:
-        enabled: true
-    prometheus:
-      enabled: true
-      serviceMonitor:
-        enabled: true
-        trustCRDsExist: true
-    dashboards:
-      enabled: true

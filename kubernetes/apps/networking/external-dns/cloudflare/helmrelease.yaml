@@ -8,10 +8,10 @@ spec:
   chart:
     spec:
       chart: external-dns
-      version: 1.15.1
+      version: 1.15.2
       sourceRef:
         kind: HelmRepository
-        name: external-dns-charts
+        name: external-dns
         namespace: flux-system
   install:
     crds: CreateReplace
@@ -38,17 +38,17 @@ spec:
             name: *secret
             key: *name
     extraArgs:
-      - --annotation-filter=external-dns.alpha.kubernetes.io/target
+      - --cloudflare-dns-records-per-page=1000
       - --cloudflare-proxied
+      - --ignore-ingress-tls-spec
       - --ingress-class=external
       - --zone-id-filter=$(CF_ZONE_ID)
+    triggerLoopOnEvent: true
     policy: sync
-    sources:
-      - ingress
+    sources: ["ingress"]
     txtOwnerId: k8s
     txtPrefix: k8s.
-    domainFilters:
-      - ${PUBLIC_DOMAIN}
+    domainFilters: ["youmans.io"]
     serviceMonitor:
       enabled: true
     podAnnotations:

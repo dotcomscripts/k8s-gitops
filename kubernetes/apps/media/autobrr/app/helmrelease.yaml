@@ -8,10 +8,10 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.6.0
+      version: 3.7.1
       sourceRef:
         kind: HelmRepository
-        name: bjw-s-charts
+        name: bjw-s
         namespace: flux-system
   install:
     remediation:
@@ -30,7 +30,7 @@ spec:
           init-db:
             image:
               repository: ghcr.io/buroa/postgres-init
-              tag: 16
+              tag: 17
             envFrom: &envFrom
               - secretRef:
                   name: autobrr-secret
@@ -40,11 +40,14 @@ spec:
               repository: ghcr.io/autobrr/autobrr
               tag: v1.58.0@sha256:9b11c36605da242933b93dfc0c572bd17fa05af9aba2ae70deafe4977ba8048b
             env:
-              AUTOBRR__CHECK_FOR_UPDATES: false
               AUTOBRR__HOST: 0.0.0.0
               AUTOBRR__PORT: &port 7474
+              AUTOBRR__METRICS_ENABLED: true
+              AUTOBRR__METRICS_HOST: 0.0.0.0
+              AUTOBRR__METRICS_PORT: &metricsPort 9094
+              AUTOBRR__CHECK_FOR_UPDATES: false
               AUTOBRR__LOG_LEVEL: INFO
-              TZ: ${TIMEZONE}
+              TZ: America/New_York
             envFrom: *envFrom
             probes:
               liveness: &probes
@@ -62,9 +65,7 @@ spec:
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
+              capabilities: { drop: ["ALL"] }
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
@@ -73,18 +74,13 @@ spec:
     ingress:
       app:
         className: internal
-        annotations:
-          hajimari.io/icon: mdi:bunny
         hosts:
-          - host: &host "{{ .Release.Name }}.${PUBLIC_DOMAIN}"
+          - host: "{{ .Release.Name }}.youmans.io"
             paths:
               - path: /
                 service:
                   identifier: app
                   port: http
-        tls:
-          - hosts:
-              - *host
     persistence:
       tmp:
         type: emptyDir
@@ -94,3 +90,10 @@ spec:
         ports:
           http:
             port: *port
+          metrics:
+            port: *metricsPort
+    serviceMonitor:
+      app:
+        serviceName: *app
+        endpoints:
+          - port: metrics

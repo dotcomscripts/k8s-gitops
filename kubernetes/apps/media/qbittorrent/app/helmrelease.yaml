@@ -8,10 +8,10 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.6.0
+      version: 3.7.1
       sourceRef:
         kind: HelmRepository
-        name: bjw-s-charts
+        name: bjw-s
         namespace: flux-system
   install:
     remediation:
@@ -28,28 +28,33 @@ spec:
           app:
             image:
               repository: ghcr.io/buroa/qbittorrent
-              tag: 4.6.7@sha256:36c0b4f5298fa77deb075301dcf6842f8ba2b86b5f27a4724c4ee0a82bd7997b
+              tag: 5.0.3@sha256:7539bd719a92e1e2f3d98dcc3368723d20dc3ce37d35675c8940bc07735edab0
             env:
-              QBITTORRENT__PORT: &port 8080
-              QBITTORRENT__BT_PORT: &bittorrentPort ${NET_SERVICES_QBITTORRENT_PORT}
-              QBT_BitTorrent__Session__Interface: eth0
-              QBT_BitTorrent__Session__InterfaceAddress:
-                valueFrom:
-                  fieldRef:
-                    fieldPath: status.podIP
-              QBT_BitTorrent__Session__InterfaceName: eth0
-              QBT_BitTorrent__Session__Port: *bittorrentPort
-              QBT_Preferences__WebUI__AlternativeUIEnabled: false
-              QBT_Preferences__WebUI__AuthSubnetWhitelistEnabled: true
-              QBT_Preferences__WebUI__AuthSubnetWhitelist: 10.0.0.0/8
-              QBT_Preferences__WebUI__LocalHostAuth: false
-              TZ: ${TIMEZONE}
+              QBT_TORRENTING_PORT: &bittorrentPort 50413
+              QBT_WEBUI_PORT: &port 8080
+              TZ: America/New_York
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/v2/app/version
+                    port: *port
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 10
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
+              capabilities: { drop: ["ALL"] }
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
@@ -57,34 +62,31 @@ spec:
         runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
-        supplementalGroups:
-          - 65536
+        supplementalGroups: [65536]
     ingress:
       app:
         className: internal
-        annotations:
-          hajimari.io/icon: mdi:seedling
-          hajimari.io/url: https://qb.${PUBLIC_DOMAIN}
         hosts:
-          - host: &host "{{ .Release.Name }}.${PUBLIC_DOMAIN}"
+          - host: "{{ .Release.Name }}.youmans.io"
             paths: &paths
               - path: /
                 service:
                   identifier: app
                   port: http
-          - host: &customHost qb.${PUBLIC_DOMAIN}
+          - host: qb.youmans.io
             paths: *paths
-        tls:
-          - hosts:
-              - *host
-              - *customHost
     persistence:
       config:
         existingClaim: *app
       media:
         type: nfs
-        server: nas.${INTERNAL_DOMAIN}
+        server: nas.internal
         path: /volume1/PLEX
+        globalMounts:
+          - path: /media/downloads/torrents
+            subPath: downloads/torrents
+      tmp:
+        type: emptyDir
     service:
       app:
         controller: *app
@@ -96,11 +98,8 @@ spec:
         controller: *app
         type: LoadBalancer
         annotations:
-          io.cilium/lb-ipam-ips: ${NET_SERVICES_QBITTORRENT_IP}
+          lbipam.cilium.io/ips: 10.0.2.3
         ports:
           bittorrent-tcp:
             port: *bittorrentPort
             protocol: TCP
-          bittorrent-udp:
-            port: *bittorrentPort
-            protocol: UDP

@@ -8,10 +8,10 @@ spec:
   chart:
     spec:
       chart: node-feature-discovery
-      version: 0.17.0
+      version: 0.17.1
       sourceRef:
         kind: HelmRepository
-        name: node-feature-discovery-charts
+        name: node-feature-discovery
         namespace: flux-system
   install:
     crds: CreateReplace
@@ -21,12 +21,13 @@ spec:
     cleanupOnFail: true
     crds: CreateReplace
     remediation:
+      strategy: rollback
       retries: 3
   values:
     worker:
       config:
         core:
-          sources:
+          labelSources:
             - pci
             - system
             - usb

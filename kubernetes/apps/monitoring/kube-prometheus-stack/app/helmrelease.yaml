@@ -5,50 +5,44 @@ metadata:
   name: kube-prometheus-stack
 spec:
   interval: 30m
-  timeout: 15m
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: 67.9.0
+      version: 69.3.1
       sourceRef:
         kind: HelmRepository
-        name: prometheus-community-charts
+        name: prometheus-community
         namespace: flux-system
   install:
-    crds: CreateReplace
     remediation:
       retries: 3
   upgrade:
     cleanupOnFail: true
-    crds: CreateReplace
     remediation:
+      strategy: rollback
       retries: 3
   values:
+    crds:
+      enabled: true
+      upgradeJob:
+        enabled: true
+        forceConflicts: true
     cleanPrometheusOperatorObjectNames: true
     alertmanager:
       ingress:
         enabled: true
         ingressClassName: internal
-        annotations:
-          hajimari.io/appName: Alertmanager
-          hajimari.io/icon: fluent:alert-16-filled
-        hosts:
-          - &host am.${PUBLIC_DOMAIN}
-        paths:
-          - /
-        pathType: Prefix
-        tls:
-          - hosts:
-              - *host
+        hosts: ["am.youmans.io"]
       alertmanagerSpec:
-        replicas: 1
-        useExistingSecret: true
-        configSecret: alertmanager-secret
-        externalUrl: https://am.${PUBLIC_DOMAIN}
+        alertmanagerConfiguration:
+          name: alertmanager
+          global:
+            resolveTimeout: 5m
+        externalUrl: https://am.youmans.io
         storage:
           volumeClaimTemplate:
             spec:
-              storageClassName: ${CLUSTER_STORAGE_HOSTPATH}
+              storageClassName: democratic-csi-hostpath
               resources:
                 requests:
                   storage: 1Gi
@@ -72,21 +66,9 @@ spec:
       ingress:
         enabled: true
         ingressClassName: internal
-        annotations:
-          hajimari.io/appName: Prometheus
-          hajimari.io/icon: simple-icons:prometheus
-        hosts:
-          - &host prometheus.${PUBLIC_DOMAIN}
-        paths:
-          - /
-        pathType: Prefix
-        tls:
-          - hosts:
-              - *host
+        hosts: ["prometheus.youmans.io"]
       prometheusSpec:
-        replicas: 1
-        replicaExternalLabelName: __replica__
-        ruleselectorniluseshelmvalues: false
+        ruleSelectorNilUsesHelmValues: false
         serviceMonitorSelectorNilUsesHelmValues: false
         podMonitorSelectorNilUsesHelmValues: false
         probeSelectorNilUsesHelmValues: false
@@ -95,17 +77,16 @@ spec:
         walCompression: true
         enableFeatures:
           - memory-snapshot-on-shutdown
-          - new-service-discovery-manager
-        externalUrl: https://prometheus.${PUBLIC_DOMAIN}
-        retention: 2d
-        retentionSize: 15GB
+        externalUrl: https://prometheus.youmans.io
+        retention: 14d
+        retentionSize: 50GB
         storageSpec:
           volumeClaimTemplate:
             spec:
-              storageClassName: ${CLUSTER_STORAGE_HOSTPATH}
+              storageClassName: democratic-csi-hostpath
               resources:
                 requests:
-                  storage: 20Gi
+                  storage: 50Gi
     prometheus-node-exporter:
       fullnameOverride: node-exporter
       prometheus: &prometheus
@@ -118,8 +99,6 @@ spec:
               sourceLabels:
                 - __meta_kubernetes_pod_node_name
               targetLabel: kubernetes_node
-    kubeStateMetrics:
-      enabled: true
     kube-state-metrics:
       fullnameOverride: kube-state-metrics
       metricLabelsAllowlist:

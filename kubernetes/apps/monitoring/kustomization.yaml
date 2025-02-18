@@ -1,11 +1,18 @@
 ---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+namespace: monitoring
+components:
+  - ../../components/common
 resources:
-  - ./namespace.yaml
+  - ./blackbox-exporter/ks.yaml
   - ./gatus/ks.yaml
   - ./grafana/ks.yaml
   - ./karma/ks.yaml
-  - ./unpoller/ks.yaml
+  - ./kromgo/ks.yaml
   - ./kube-prometheus-stack/ks.yaml
-  - ./exporters
+  - ./loki/ks.yaml
+  - ./promtail/ks.yaml
+  - ./smartctl-exporter/ks.yaml
+  - ./snmp-exporter/ks.yaml
+  - ./unpoller/ks.yaml
