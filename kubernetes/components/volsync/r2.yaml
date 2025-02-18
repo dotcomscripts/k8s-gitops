@@ -34,8 +34,6 @@ spec:
     pruneIntervalDays: 14
     repository: "${APP}-restic-secret"
     cacheCapacity: "${VOLSYNC_CACHE_CAPACITY:=2Gi}"
-    cacheStorageClassName: "${VOLSYNC_CACHE_SNAPSHOTCLASS:=openebs-hostpath}"
-    cacheAccessModes: ["${VOLSYNC_CACHE_ACCESSMODES:=ReadWriteOnce}"]
     storageClassName: "${VOLSYNC_STORAGECLASS:=openebs-hostpath}"
     accessModes: ["${VOLSYNC_SNAP_ACCESSMODES:=ReadWriteOnce}"]
     moverSecurityContext:
@@ -56,8 +54,6 @@ spec:
   restic:
     repository: "${APP}-restic-secret"
     copyMethod: Clone
-    cacheStorageClassName: "${VOLSYNC_CACHE_SNAPSHOTCLASS:=openebs-hostpath}"
-    cacheAccessModes: ["${VOLSYNC_CACHE_ACCESSMODES:=ReadWriteOnce}"]
     cacheCapacity: "${VOLSYNC_CACHE_CAPACITY:=2Gi}"
     storageClassName: "${VOLSYNC_STORAGECLASS:=openebs-hostpath}"
     accessModes: ["${VOLSYNC_ACCESSMODES:=ReadWriteOnce}"]
