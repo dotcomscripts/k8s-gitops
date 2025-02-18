@@ -42,6 +42,8 @@ spec:
       enabled: true
       strategy: node
       externalProvisioner:
+        enabled: true
+        image: registry.k8s.io/sig-storage/csi-provisioner:v5.1.0
         extraArgs:
           - --leader-election=false
           - --node-deployment=true
@@ -56,11 +58,13 @@ spec:
         enabled: false
       externalSnapshotter:
         enabled: true
+        image: registry.k8s.io/sig-storage/csi-snapshotter:v8.2.0
         extraArgs:
           - --leader-election=false
           - --node-deployment=true
     node:
       driver:
+        image: ghcr.io/democratic-csi/democratic-csi:v1.9.2
         extraVolumeMounts:
           - name: local-hostpath
             mountPath: &path /var/mnt/extra/democratic-csi/local
