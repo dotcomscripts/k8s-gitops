@@ -51,7 +51,6 @@ spec:
         enabled: true
     node:
       driver:
-        image: ghcr.io/democratic-csi/democratic-csi:v1.9.2
         extraVolumeMounts:
           - name: local-hostpath
             mountPath: &path /var/mnt/extra/democratic-csi/local
