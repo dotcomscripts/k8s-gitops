@@ -17,9 +17,6 @@ spec:
     parameters:
       max_connections: "200"
       shared_buffers: 256MB
-  resources:
-    limits:
-      hugepages-2Mi: 2Gi # Requires sysctl set on the host
   monitoring:
     enablePodMonitor: true
   backup:
