@@ -15,7 +15,7 @@ spec:
       namespace: external-secrets
     - name: qbittorrent
       namespace: *namespace
-    - name: openebs-hostpath
+    - name: openebs
       namespace: openebs-system
     - name: volsync
       namespace: volsync-system

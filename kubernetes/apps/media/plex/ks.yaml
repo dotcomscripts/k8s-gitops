@@ -14,7 +14,7 @@ spec:
   dependsOn:
     - name: intel-device-plugin-gpu
       namespace: kube-system
-    - name: openebs-hostpath
+    - name: openebs
       namespace: openebs-system
     - name: volsync
       namespace: volsync-system

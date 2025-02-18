@@ -12,7 +12,7 @@ spec:
     - ../../../../components/gatus
     - ../../../../components/volsync
   dependsOn:
-    - name: openebs-hostpath
+    - name: openebs
       namespace: openebs-system
     - name: volsync
       namespace: volsync-system
