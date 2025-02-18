@@ -53,7 +53,7 @@ spec:
     manual: restore-once
   restic:
     repository: "${APP}-restic-secret"
-    copyMethod: Clone
+    copyMethod: Direct
     cacheCapacity: "${VOLSYNC_CACHE_CAPACITY:=2Gi}"
     storageClassName: "${VOLSYNC_STORAGECLASS:=openebs-hostpath}"
     accessModes: ["${VOLSYNC_ACCESSMODES:=ReadWriteOnce}"]
