@@ -30,14 +30,13 @@ spec:
   trigger:
     schedule: "15 */8 * * *"
   restic:
-    copyMethod: "${VOLSYNC_COPYMETHOD:=Snapshot}"
+    copyMethod: "${VOLSYNC_COPYMETHOD:=Clone}"
     pruneIntervalDays: 14
     repository: "${APP}-restic-secret"
-    volumeSnapshotClassName: "${VOLSYNC_SNAPSHOTCLASS:=csi-democratic-csi-hostpath}"
     cacheCapacity: "${VOLSYNC_CACHE_CAPACITY:=2Gi}"
-    cacheStorageClassName: "${VOLSYNC_CACHE_SNAPSHOTCLASS:=democratic-csi-hostpath}"
+    cacheStorageClassName: "${VOLSYNC_CACHE_SNAPSHOTCLASS:=openebs-hostpath}"
     cacheAccessModes: ["${VOLSYNC_CACHE_ACCESSMODES:=ReadWriteOnce}"]
-    storageClassName: "${VOLSYNC_STORAGECLASS:=democratic-csi-hostpath}"
+    storageClassName: "${VOLSYNC_STORAGECLASS:=openebs-hostpath}"
     accessModes: ["${VOLSYNC_SNAP_ACCESSMODES:=ReadWriteOnce}"]
     moverSecurityContext:
       runAsUser: ${VOLSYNC_PUID:=568}
@@ -56,12 +55,11 @@ spec:
     manual: restore-once
   restic:
     repository: "${APP}-restic-secret"
-    copyMethod: Snapshot
-    volumeSnapshotClassName: "${VOLSYNC_SNAPSHOTCLASS:=csi-democratic-csi-hostpath}"
-    cacheStorageClassName: "${VOLSYNC_CACHE_SNAPSHOTCLASS:=democratic-csi-hostpath}"
+    copyMethod: Clone
+    cacheStorageClassName: "${VOLSYNC_CACHE_SNAPSHOTCLASS:=openebs-hostpath}"
     cacheAccessModes: ["${VOLSYNC_CACHE_ACCESSMODES:=ReadWriteOnce}"]
     cacheCapacity: "${VOLSYNC_CACHE_CAPACITY:=2Gi}"
-    storageClassName: "${VOLSYNC_STORAGECLASS:=democratic-csi-hostpath}"
+    storageClassName: "${VOLSYNC_STORAGECLASS:=openebs-hostpath}"
     accessModes: ["${VOLSYNC_ACCESSMODES:=ReadWriteOnce}"]
     capacity: "${VOLSYNC_CAPACITY:=5Gi}"
     moverSecurityContext:

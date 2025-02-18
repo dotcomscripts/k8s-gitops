@@ -45,7 +45,7 @@ spec:
         resources:
           requests:
             storage: 25Gi
-        storageClassName: democratic-csi-hostpath
+        storageClassName: openebs-hostpath
     controllerServiceAccount:
       name: actions-runner-controller
       namespace: actions-runner-system

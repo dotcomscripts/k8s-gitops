@@ -14,8 +14,8 @@ spec:
   dependsOn:
     - name: intel-device-plugin-gpu
       namespace: kube-system
-    - name: democratic-csi
-      namespace: democratic-csi
+    - name: openebs-hostpath
+      namespace: openebs-system
     - name: volsync
       namespace: volsync-system
   interval: 30m

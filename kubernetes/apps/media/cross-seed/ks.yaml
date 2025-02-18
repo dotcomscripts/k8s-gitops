@@ -15,8 +15,8 @@ spec:
       namespace: external-secrets
     - name: qbittorrent
       namespace: *namespace
-    - name: democratic-csi
-      namespace: democratic-csi
+    - name: openebs-hostpath
+      namespace: openebs-system
     - name: volsync
       namespace: volsync-system
   interval: 30m
