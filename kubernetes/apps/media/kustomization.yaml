@@ -6,7 +6,7 @@ components:
   - ../../components/common
 resources:
   - ./autobrr/ks.yaml
-  - ./cross-seed/ks.yaml
+  # - ./cross-seed/ks.yaml
   # - ./jellyseerr/ks.yaml
   # - ./plex/ks.yaml
   - ./prowlarr/ks.yaml
@@ -14,5 +14,5 @@ resources:
   # - ./radarr/ks.yaml
   # - ./recyclarr/ks.yaml
   # - ./sonarr/ks.yaml
-  # - ./tautulli/ks.yaml
+  - ./tautulli/ks.yaml
   - ./unpackerr/ks.yaml
