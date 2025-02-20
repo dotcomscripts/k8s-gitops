@@ -22,7 +22,7 @@ machine:
     disableManifestsDirectory: true
   network:
     interfaces:
-      - deviceSelector: { hardwareAddr: 94:c6:91:1e:*, driver: e1000e }
+      - deviceSelector: { hardwareAddr: "94:c6:91:1e:*", driver: e1000e }
         mtu: 1500
         dhcp: true
         vlans:
@@ -68,7 +68,7 @@ machine:
     net.ipv4.tcp_wmem: 4096 65536 33554432 # 10Gb/s
     net.ipv4.tcp_window_scaling: 1         # 10Gb/s
   sysfs:
-    devices.system.cpu.intel_pstate.hwp_dynamic_boost: "1"
+    devices.system.cpu.intel_pstate.hwp_dynamic_boost: 1
     {% for i in range(0, 4) %}
     devices.system.cpu.cpu{{ i }}.cpufreq.energy_performance_preference: balance_performance
     {% endfor %}
