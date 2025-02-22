@@ -11,9 +11,13 @@ sonarr:
       - template: sonarr-quality-definition-series
       - template: sonarr-v4-quality-profile-web-1080p
       - template: sonarr-v4-custom-formats-web-1080p
+      - template: sonarr-quality-definition-anime
+      - template: sonarr-v4-quality-profile-anime
+      - template: sonarr-v4-custom-formats-anime
 
     quality_profiles:
       - name: WEB-1080p
+      - name: Remux-1080p - Anime
 
     custom_formats:
       - trash_ids:
