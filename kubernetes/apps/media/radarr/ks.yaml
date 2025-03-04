@@ -15,7 +15,7 @@ spec:
       namespace: democratic-csi
     - name: onepassword
       namespace: external-secrets
-  interval: 30m
+  interval: 1h
   path: ./kubernetes/apps/media/radarr/app
   prune: true
   sourceRef:
