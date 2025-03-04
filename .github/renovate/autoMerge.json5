@@ -7,7 +7,7 @@
       automerge: true,
       automergeType: "branch",
       matchUpdateTypes: ["digest"],
-      matchPackagePatterns: ["ghcr.io/buroa"],
+      matchPackageNames: ["/buroa/"],
     },
     {
       description: ["Auto-merge GitHub Actions"],
@@ -16,15 +16,6 @@
       automerge: true,
       automergeType: "branch",
       matchUpdateTypes: ["minor", "patch", "digest"],
-    },
-    {
-      description: ["Auto-merge Helm Releases"],
-      matchDatasources: ["helm", "docker"],
-      automerge: true,
-      automergeType: "pr",
-      matchUpdateTypes: ["minor", "patch"],
-      matchDepNames: ["kube-prometheus-stack"],
-      ignoreTests: false,
     },
   ],
 }
