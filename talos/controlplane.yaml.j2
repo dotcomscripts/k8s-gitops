@@ -11,6 +11,8 @@ machine:
   certSANs: ["127.0.0.1"]
   kubelet:
     image: ghcr.io/siderolabs/kubelet:{{ ENV.KUBERNETES_VERSION }}
+    extraConfig:
+      serializeImagePulls: false
     extraMounts:
       - destination: /var/mnt/extra
         type: bind
@@ -99,6 +101,7 @@ machine:
       - name: thunderbolt
       - name: thunderbolt_net
   nodeLabels:
+    intel.feature.node.kubernetes.io/gpu: true
     topology.kubernetes.io/region: k8s
     topology.kubernetes.io/zone: m
 cluster:

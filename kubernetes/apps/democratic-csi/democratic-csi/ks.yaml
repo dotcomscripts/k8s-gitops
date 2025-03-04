@@ -11,7 +11,7 @@ spec:
   dependsOn:
     - name: snapshot-controller
       namespace: volsync-system
-  interval: 30m
+  interval: 1h
   path: ./kubernetes/apps/democratic-csi/democratic-csi/app
   prune: true
   sourceRef:
