@@ -3,8 +3,6 @@ originRequest:
   originServerName: external.youmans.io
 
 ingress:
-  - hostname: youmans.io
-    service: https://nginx-external-controller.networking.svc.cluster.local
-  - hostname: "*.youmans.io"
-    service: https://nginx-external-controller.networking.svc.cluster.local
-  - service: http_status:404
+  - { hostname: youmans.io, service: https://cilium-gateway-external.kube-system.svc.cluster.local }
+  - { hostname: "*.youmans.io", service: https://cilium-gateway-external.kube-system.svc.cluster.local }
+  - { service: http_status:404 }

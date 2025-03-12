@@ -100,16 +100,6 @@ spec:
         runAsNonRoot: true
         runAsUser: 999
         runAsGroup: 999
-    ingress:
-      app:
-        className: internal
-        hosts:
-          - host: "{{ .Release.Name }}.youmans.io"
-            paths:
-              - path: /
-                service:
-                  identifier: app
-                  port: http
     persistence:
       config:
         type: emptyDir

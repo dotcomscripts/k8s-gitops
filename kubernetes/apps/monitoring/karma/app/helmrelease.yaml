@@ -51,22 +51,24 @@ spec:
         runAsNonRoot: true
         runAsUser: 568
         runAsGroup: 568
-    ingress:
-      app:
-        className: internal
-        hosts:
-          - host: "{{ .Release.Name }}.youmans.io"
-            paths:
-              - path: /
-                service:
-                  identifier: app
-                  port: http
     service:
       app:
         controller: *app
         ports:
           http:
             port: *port
+    route:
+      app:
+        hostnames:
+          - "{{ .Release.Name }}.youmans.io"
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - backendRefs:
+              - name: *app
+                port: *port
     serviceMonitor:
       app:
         serviceName: *app

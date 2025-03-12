@@ -25,6 +25,9 @@ spec:
       retries: 3
   values:
     fullnameOverride: *app
+    image:
+      repository: ghcr.io/buroa/external-dns
+      tag: 631b84da
     provider:
       name: webhook
       webhook:
@@ -51,11 +54,9 @@ spec:
             port: http-webhook
           initialDelaySeconds: 10
           timeoutSeconds: 5
-    extraArgs:
-      - --ignore-ingress-tls-spec
     triggerLoopOnEvent: true
     policy: sync
-    sources: ["ingress", "service"]
+    sources: ["gateway-httproute", "service"]
     txtOwnerId: k8s
     txtPrefix: k8s.
     domainFilters: ["youmans.io"]
