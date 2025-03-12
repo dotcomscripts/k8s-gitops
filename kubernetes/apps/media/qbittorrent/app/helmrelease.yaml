@@ -59,18 +59,6 @@ spec:
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
         supplementalGroups: [65536]
-    ingress:
-      app:
-        className: internal
-        hosts:
-          - host: "{{ .Release.Name }}.youmans.io"
-            paths: &paths
-              - path: /
-                service:
-                  identifier: app
-                  port: http
-          - host: qb.youmans.io
-            paths: *paths
     persistence:
       config:
         existingClaim: *app
@@ -83,6 +71,19 @@ spec:
             subPath: downloads/torrents
       tmp:
         type: emptyDir
+    route:
+      app:
+        hostnames:
+          - "{{ .Release.Name }}.youmans.io"
+          - qb.youmans.io
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - backendRefs:
+              - name: *app
+                port: *port
     service:
       app:
         controller: *app
@@ -94,7 +95,7 @@ spec:
         controller: *app
         type: LoadBalancer
         annotations:
-          lbipam.cilium.io/ips: 10.0.2.3
+          lbipam.cilium.io/ips: 10.0.2.82, ::ffff:10.0.2.82
         ports:
           bittorrent-tcp:
             port: *bittorrentPort

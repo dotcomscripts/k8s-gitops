@@ -76,18 +76,6 @@ spec:
         runAsNonRoot: true
         runAsUser: 568
         runAsGroup: 568
-    ingress:
-      app:
-        className: external
-        hosts:
-          - host: "{{ .Release.Name }}.youmans.io"
-            paths: &paths
-              - path: /
-                service:
-                  identifier: app
-                  port: http
-          - host: status.youmans.io
-            paths: *paths
     persistence:
       config:
         type: emptyDir
@@ -98,6 +86,19 @@ spec:
           - path: /config/config.yaml
             subPath: config.yaml
             readOnly: true
+    route:
+      app:
+        hostnames:
+          - "{{ .Release.Name }}.youmans.io"
+          - status.youmans.io
+        parentRefs:
+          - name: external
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - backendRefs:
+              - name: *app
+                port: *port
     service:
       app:
         controller: *app

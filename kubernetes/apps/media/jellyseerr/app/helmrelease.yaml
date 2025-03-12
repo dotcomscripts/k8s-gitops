@@ -58,18 +58,6 @@ spec:
         runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
-    ingress:
-      app:
-        className: external
-        hosts:
-          - host: "{{ .Release.Name }}.youmans.io"
-            paths: &paths
-              - path: /
-                service:
-                  identifier: app
-                  port: http
-          - host: requests.youmans.io
-            paths: *paths
     persistence:
       config:
         existingClaim: *app
@@ -85,6 +73,19 @@ spec:
           - path: /app/config/logs
       tmp:
         type: emptyDir
+    route:
+      app:
+        hostnames:
+          - "{{ .Release.Name }}.youmans.io"
+          - requests.youmans.io
+        parentRefs:
+          - name: external
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - backendRefs:
+              - name: *app
+                port: *port
     service:
       app:
         controller: *app
