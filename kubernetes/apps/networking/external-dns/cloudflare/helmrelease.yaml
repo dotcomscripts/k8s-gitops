@@ -26,6 +26,9 @@ spec:
   values:
     fullnameOverride: *app
     provider: cloudflare
+    image: # TODO: Testing
+      repository: ghcr.io/buroa/external-dns
+      tag: 47731b39
     env:
       - name: &name CF_API_TOKEN
         valueFrom:
