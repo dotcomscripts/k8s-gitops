@@ -25,9 +25,9 @@ spec:
       retries: 3
   values:
     fullnameOverride: *app
-    image:
+    image: # TODO: Switch to upstream image
       repository: ghcr.io/buroa/external-dns
-      tag: 631b84da
+      tag: a6243325
     provider:
       name: webhook
       webhook:
