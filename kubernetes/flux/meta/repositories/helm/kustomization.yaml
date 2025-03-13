@@ -6,7 +6,6 @@ resources:
   - ./backube.yaml
   - ./cilium.yaml
   - ./democratic-csi.yaml
-  - ./external-dns.yaml
   - ./grafana.yaml
   - ./intel.yaml
   - ./jetstack.yaml
