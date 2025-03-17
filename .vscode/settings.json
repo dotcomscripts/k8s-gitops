@@ -6,48 +6,42 @@
   "editor.guides.bracketPairsHorizontal": true,
   "editor.guides.highlightActiveBracketPair": true,
   "editor.hover.delay": 1500,
-  "editor.rulers": [
-    100
-  ],
+  "editor.rulers": [100],
   "editor.stickyScroll.enabled": false,
   "explorer.autoReveal": false,
   "files.associations": {
-    "*.json5": "json5",
+    "**/*.json5": "json5"
   },
   "files.trimTrailingWhitespace": true,
   "material-icon-theme.files.associations": {
-    // TODO: https://github.com/PKief/vscode-material-icon-theme/issues/330
     "helmfile.yaml": "helm",
     "kubeconfig": "kubernetes",
     "talosconfig": "kubernetes"
   },
   "material-icon-theme.folders.associations": {
     // top level
+    ".github/workflows": "ci",
+    ".renovate": "robot",
     "bootstrap": "seeders",
     "flux": "pipe",
     "talos": "linux",
-    // .github
-    ".github/renovate": "robot",
-    ".github/workflows": "ci",
     // namespaces
     "actions-runner-system": "github",
     "cert-manager": "guard",
-    "databases": "database",
-    "democratic-csi": "base",
+    "democratic-csi": "dump",
     "external-secrets": "secure",
     "flux-system": "pipe",
     "kube-system": "kubernetes",
     "media": "video",
     "monitoring": "event",
     "networking": "connection",
+    "openebs-system": "base",
     "system-upgrade": "update",
-    "volsync-system": "aws",
+    "volsync-system": "aws"
   },
   "vs-kubernetes": {
-    "vs-kubernetes.kubeconfig": "./kubeconfig",
-    "vs-kubernetes.knownKubeconfigs": [
-      "./kubeconfig"
-    ]
+    "vs-kubernetes.kubeconfig": "./kubernetes/kubeconfig",
+    "vs-kubernetes.knownKubeconfigs": ["./kubernetes/kubeconfig"]
   },
   "yaml.schemaStore.enable": true,
   "yaml.schemas": {

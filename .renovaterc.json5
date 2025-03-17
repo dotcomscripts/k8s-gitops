@@ -16,7 +16,7 @@
     ":disableRateLimiting",
     ":gitSignOff",
     ":semanticCommits",
-    ":timezone(America/New_York)",
+    ":timezone(America/Chicago)",
   ],
   dependencyDashboardTitle: "Renovate Dashboard 🤖",
   suppressNotifications: ["prEditedNotification", "prIgnoreNotification"],
