@@ -10,7 +10,7 @@ spec:
     operation: copy
   ref:
     tag: 0.14.7
-  url: oci://ghcr.io/buroa/charts-mirror/democratic-csi
+  url: oci://ghcr.io/home-operations/charts-mirror/democratic-csi
   verify:
     provider: cosign
 ---
