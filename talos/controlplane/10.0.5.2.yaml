@@ -8,3 +8,5 @@ machine:
       serial: S465NB0K748379B
   network:
     hostname: m0.k8s.internal
+  nodeLabels:
+    topology.kubernetes.io/zone: m
