@@ -73,16 +73,19 @@ spec:
     persistence:
       config:
         existingClaim: *app
-      config-logs:
-        type: emptyDir
-        globalMounts:
-          - path: /config/logs
       media:
         type: nfs
         server: nas.internal
         path: /volume1/PLEX
-      tmp:
+      tmpfs:
         type: emptyDir
+        advancedMounts:
+          radarr:
+            app:
+              - path: /config/logs
+                subPath: logs
+              - path: /tmp
+                subPath: tmp
     route:
       app:
         hostnames:
@@ -93,11 +96,10 @@ spec:
             sectionName: https
         rules:
           - backendRefs:
-              - name: *app
+              - identifier: app
                 port: *port
     service:
       app:
-        controller: *app
         ports:
           http:
             port: *port

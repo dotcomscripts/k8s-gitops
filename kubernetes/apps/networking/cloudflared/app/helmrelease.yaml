@@ -73,7 +73,6 @@ spec:
             readOnly: true
     service:
       app:
-        controller: *app
         ports:
           http:
             port: *port

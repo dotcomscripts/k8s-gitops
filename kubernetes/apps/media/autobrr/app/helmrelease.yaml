@@ -68,8 +68,15 @@ spec:
         runAsUser: 568
         runAsGroup: 568
     persistence:
-      tmp:
+      tmpfs:
         type: emptyDir
+        advancedMounts:
+          autobrr:
+            app:
+              - path: /config/log
+                subPath: log
+              - path: /tmp
+                subPath: tmp
     route:
       app:
         hostnames:
@@ -80,11 +87,10 @@ spec:
             sectionName: https
         rules:
           - backendRefs:
-              - name: *app
+              - identifier: app
                 port: *port
     service:
       app:
-        controller: *app
         ports:
           http:
             port: *port
