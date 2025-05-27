@@ -5,12 +5,12 @@ metadata:
   name: app-template
   namespace: flux-system
 spec:
-  interval: 1h
+  interval: 5m
   layerSelector:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
   ref:
-    tag: 3.7.3
-  url: oci://ghcr.io/bjw-s/helm/app-template
+    tag: 4.0.1
+  url: oci://ghcr.io/bjw-s-labs/helm/app-template
   verify:
     provider: cosign

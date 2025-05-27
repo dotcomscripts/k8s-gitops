@@ -8,6 +8,7 @@ spec:
   interval: 1h
   path: ./kubernetes/flux/meta
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -26,6 +27,7 @@ spec:
   interval: 1h
   path: ./kubernetes/apps
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
