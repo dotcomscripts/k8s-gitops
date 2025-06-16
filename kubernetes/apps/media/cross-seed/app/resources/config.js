@@ -6,17 +6,14 @@
 module.exports = {
   action: "inject",
   apiKey: process.env.CROSS_SEED_API_KEY,
-  delay: 30,
-  includeNonVideos: true,
-  includeSingleEpisodes: true,
   linkCategory: "cross-seed",
   linkDirs: ["/media/downloads/torrents/complete/cross-seed"],
   linkType: "hardlink",
   matchMode: "partial",
-  outputDir: "/tmp",
+  outputDir: null,
   port: Number(process.env.CROSS_SEED_PORT),
-  qbittorrentUrl: "http://qbittorrent.media.svc.cluster.local:8080",
   skipRecheck: true,
-  torznab: [], // Only using announcements from autobrr
+  torrentClients: ["qbittorrent:http://qbittorrent.media.svc.cluster.local:8080"],
+  torznab: [],
   useClientTorrents: true,
 };
