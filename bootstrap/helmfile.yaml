@@ -31,8 +31,8 @@ releases:
 
   - name: cert-manager
     namespace: cert-manager
-    chart: oci://ghcr.io/home-operations/charts-mirror/cert-manager
-    version: v1.17.1
+    chart: oci://quay.io/jetstack/charts/cert-manager
+    version: v1.17.2
     values: ["../kubernetes/apps/cert-manager/cert-manager/app/helm/values.yaml"]
     needs: ["kube-system/coredns"]
 

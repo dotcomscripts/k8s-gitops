@@ -11,11 +11,10 @@ spec:
     namespace: flux-system
   install:
     remediation:
-      retries: 3
+      retries: -1
   upgrade:
     cleanupOnFail: true
     remediation:
-      strategy: rollback
       retries: 3
   values:
     controllers:
@@ -59,12 +58,15 @@ spec:
         existingClaim: tautulli-cache
         globalMounts:
           - path: /config/cache
-      config-logs:
+      tmpfs:
         type: emptyDir
-        globalMounts:
-          - path: /config/logs
-      tmp:
-        type: emptyDir
+        advancedMounts:
+          tautulli:
+            app:
+              - path: /config/logs
+                subPath: logs
+              - path: /tmp
+                subPath: tmp
     route:
       app:
         hostnames:
@@ -73,10 +75,6 @@ spec:
           - name: internal
             namespace: kube-system
             sectionName: https
-        rules:
-          - backendRefs:
-              - identifier: app
-                port: *port
     service:
       app:
         ports:

@@ -11,8 +11,6 @@ spec:
   ref:
     tag: 0.32.1
   url: oci://ghcr.io/home-operations/charts-mirror/intel-device-plugins-gpu
-  verify:
-    provider: cosign
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -25,11 +23,10 @@ spec:
     name: intel-device-plugins-gpu
   install:
     remediation:
-      retries: 3
+      retries: -1
   upgrade:
     cleanupOnFail: true
     remediation:
-      strategy: rollback
       retries: 3
   values:
     name: i915
