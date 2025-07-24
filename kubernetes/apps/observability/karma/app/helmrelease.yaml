@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: smtp-relay
+  name: karma
 spec:
   interval: 1h
   chartRef:
@@ -18,28 +18,29 @@ spec:
       retries: 3
   values:
     controllers:
-      smtp-relay:
+      karma:
         replicas: 2
         strategy: RollingUpdate
-        annotations:
-          reloader.stakater.com/auto: "true"
         containers:
           app:
             image:
-              repository: ghcr.io/foxcpp/maddy
-              tag: 0.8.1@sha256:55636d8a29588eea62d81d51acdafe38e0f694fb91801ab12dc1ed8c47b6439d
+              repository: ghcr.io/prymitive/karma
+              tag: v0.121@sha256:9f0ad820df1b1d0af562de3b3c545a52ddfce8d7492f434a2276e45f3a1f7e28
             env:
-              SMTP_RELAY_METRICS_PORT: &metricsPort 8080
-              SMTP_RELAY_SMTP_PORT: &smtpPort 25
-              SMTP_RELAY_SERVER_PORT: 587
-            envFrom:
-              - secretRef:
-                  name: smtp-relay-secret
+              ALERTMANAGER_URI: http://alertmanager-operated.observability.svc.cluster.local:9093
             probes:
-              liveness:
+              liveness: &probes
                 enabled: true
-              readiness:
-                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: &port 8080
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -49,24 +50,19 @@ spec:
         runAsNonRoot: true
         runAsUser: 568
         runAsGroup: 568
-    persistence:
-      config:
-        type: configMap
-        name: smtp-relay-configmap
-        globalMounts:
-          - path: /data/maddy.conf
-            subPath: maddy.conf
-            readOnly: true
-      tmp:
-        type: emptyDir
-        medium: Memory
+    route:
+      app:
+        hostnames:
+          - "{{ .Release.Name }}.youmans.io"
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
     service:
       app:
         ports:
           http:
-            port: *metricsPort
-          smtp:
-            port: *smtpPort
+            port: *port
     serviceMonitor:
       app:
         endpoints:

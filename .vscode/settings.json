@@ -33,7 +33,7 @@
     "flux-system": "pipe",
     "kube-system": "kubernetes",
     "media": "video",
-    "monitoring": "event",
+    "observability": "event",
     "networking": "connection",
     "openebs-system": "base",
     "system-upgrade": "update",
