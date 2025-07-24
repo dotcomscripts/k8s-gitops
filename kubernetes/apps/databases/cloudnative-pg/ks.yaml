@@ -66,7 +66,7 @@ spec:
       namespace: *namespace
     - name: democratic-csi
       namespace: democratic-csi
-    - name: onepassword
+    - name: onepassword-store
       namespace: external-secrets
   healthCheckExprs:
     - apiVersion: postgresql.cnpg.io/v1
