@@ -27,9 +27,9 @@ spec:
       parameters: &parameters
         barmanObjectName: r2
         serverName: postgres-v5
-  # bootstrap:
-  #   recovery:
-  #     source: source
+  bootstrap:
+    recovery:
+      source: source
   externalClusters:
     - name: source
       plugin:
