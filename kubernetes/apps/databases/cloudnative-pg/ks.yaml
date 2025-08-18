@@ -78,7 +78,7 @@ spec:
   postBuild:
     substitute:
       # renovate: datasource=docker depName=ghcr.io/cloudnative-pg/postgresql
-      POSTGRESQL_VERSION: 15.13-bookworm
+      POSTGRESQL_VERSION: 15.14-bookworm
   prune: true
   retryInterval: 2m
   sourceRef:
