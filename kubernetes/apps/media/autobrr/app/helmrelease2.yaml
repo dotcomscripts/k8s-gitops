@@ -68,7 +68,7 @@ spec:
       tmpfs:
         type: emptyDir
         advancedMounts:
-          autobrr:
+          autobrr2:
             app:
               - path: /config/log
                 subPath: log
