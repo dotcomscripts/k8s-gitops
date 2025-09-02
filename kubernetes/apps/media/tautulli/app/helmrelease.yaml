@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app tautulli
+  name: tautulli
 spec:
   interval: 1h
   chartRef:
@@ -19,14 +19,20 @@ spec:
   values:
     controllers:
       tautulli:
+        annotations:
+          reloader.stakater.com/auto: "true"
         containers:
           app:
             image:
               repository: ghcr.io/home-operations/tautulli
               tag: 2.15.3@sha256:3e0eaca8c082ebe121a0ae9125bea1b4e2d177fca34ac8df4ec14a28e62f63a4
             env:
-              TAUTULLI__PORT: &port 8181
+              TAUTULLI_HTTP_PORT: &port 80
+              TAUTULLI_HTTP_BASE_URL: https://{{ .Release.Name }}.k13.dev
               TZ: America/New_York
+            envFrom:
+              - secretRef:
+                  name: "{{ .Release.Name }}-secret"
             probes:
               liveness: &probes
                 enabled: true
@@ -45,6 +51,7 @@ spec:
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
     defaultPodOptions:
+      hostUsers: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 568
@@ -53,9 +60,9 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
     persistence:
       config:
-        existingClaim: *app
+        existingClaim: "{{ .Release.Name }}"
       config-cache:
-        existingClaim: tautulli-cache
+        existingClaim: "{{ .Release.Name }}-cache"
         globalMounts:
           - path: /config/cache
       tmpfs:

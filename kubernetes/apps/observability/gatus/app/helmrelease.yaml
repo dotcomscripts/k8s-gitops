@@ -22,15 +22,7 @@ spec:
         annotations:
           reloader.stakater.com/auto: "true"
         initContainers:
-          init-db:
-            image:
-              repository: ghcr.io/home-operations/postgres-init
-              tag: 17
-            envFrom: &envFrom
-              - secretRef:
-                  name: gatus-secret
           init-config:
-            dependsOn: init-db
             image:
               repository: ghcr.io/home-operations/k8s-sidecar
               tag: 1.30.10@sha256:dd3b1f0c4e6b4512b2deb50c58acf65fd0f0927120a59a95eec854d32a6c9ce3
@@ -52,7 +44,6 @@ spec:
               GATUS_CONFIG_PATH: /config
               GATUS_DELAY_START_SECONDS: 5
               TZ: America/New_York
-            envFrom: *envFrom
             probes:
               liveness: &probes
                 enabled: true
@@ -73,6 +64,7 @@ spec:
         serviceAccount:
           name: *app
     defaultPodOptions:
+      hostUsers: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 568
@@ -82,7 +74,7 @@ spec:
         type: emptyDir
       config-file:
         type: configMap
-        name: gatus-configmap
+        name: "{{ .Release.Name }}-configmap"
         globalMounts:
           - path: /config/config.yaml
             subPath: config.yaml
@@ -90,8 +82,8 @@ spec:
     route:
       app:
         hostnames:
-          - "{{ .Release.Name }}.youmans.io"
-          - status.youmans.io
+          - "{{ .Release.Name }}.k13.dev"
+          - status.k13.dev
         parentRefs:
           - name: external
             namespace: kube-system
