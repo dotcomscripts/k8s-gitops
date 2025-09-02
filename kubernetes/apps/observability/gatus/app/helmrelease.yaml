@@ -82,8 +82,8 @@ spec:
     route:
       app:
         hostnames:
-          - "{{ .Release.Name }}.k13.dev"
-          - status.k13.dev
+          - "{{ .Release.Name }}.youmans.io"
+          - status.youmans.io
         parentRefs:
           - name: external
             namespace: kube-system
