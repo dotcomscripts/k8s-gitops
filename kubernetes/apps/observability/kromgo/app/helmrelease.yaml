@@ -29,9 +29,9 @@ spec:
               repository: ghcr.io/kashalls/kromgo
               tag: v0.7.1@sha256:d8fca4ff9b696abc4ca019c76fa629c39e844e4d9435f4afac87a97b1eeae152
             env:
+              HEALTH_PORT: &healthPort 8080
               PROMETHEUS_URL: http://prometheus-operated.observability.svc.cluster.local:9090
-              HEALTH_PORT: &healthPort 8888
-              SERVER_PORT: &port 8080
+              SERVER_PORT: &port 80
             probes:
               liveness: &probes
                 enabled: true
@@ -50,6 +50,7 @@ spec:
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
     defaultPodOptions:
+      hostUsers: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 568
@@ -57,18 +58,11 @@ spec:
     persistence:
       config:
         type: configMap
-        name: kromgo-configmap
+        name: "{{ .Release.Name }}-configmap"
         globalMounts:
           - path: /kromgo/config.yaml
             subPath: config.yaml
             readOnly: true
-    service:
-      app:
-        ports:
-          http:
-            port: *port
-          health:
-            port: *healthPort
     route:
       app:
         hostnames:
@@ -77,6 +71,17 @@ spec:
           - name: external
             namespace: kube-system
             sectionName: https
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: *port
+    service:
+      app:
+        ports:
+          http:
+            port: *port
+          health:
+            port: *healthPort
     serviceMonitor:
       app:
         endpoints:

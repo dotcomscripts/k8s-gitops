@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app qbittorrent
+  name: qbittorrent
 spec:
   interval: 1h
   chartRef:
@@ -26,7 +26,7 @@ spec:
               tag: 5.1.2@sha256:9dd0164cc23e9c937e0af27fd7c3f627d1df30c182cf62ed34d3f129c55dc0e8
             env:
               QBT_TORRENTING_PORT: &bittorrentPort 50413
-              QBT_WEBUI_PORT: &port 8080
+              QBT_WEBUI_PORT: &port 80
               TZ: America/New_York
             probes:
               liveness: &probes
@@ -60,7 +60,7 @@ spec:
         supplementalGroups: [65536]
     persistence:
       config:
-        existingClaim: *app
+        existingClaim: "{{ .Release.Name }}"
       media:
         type: nfs
         server: nas.internal
@@ -68,8 +68,20 @@ spec:
         globalMounts:
           - path: /media/downloads/torrents
             subPath: downloads/torrents
-      tmp:
+      qbrr:
+        type: image
+        image: ghcr.io/buroa/qbrr:0.1.1@sha256:fe4a1d100ba896999253a5122d9c77cc4920779d618c23f765458cb6ec7383ca
+        globalMounts:
+          - readOnly: true
+      tmpfs:
         type: emptyDir
+        advancedMounts:
+          qbittorrent:
+            app:
+              - path: /config/qBittorrent/logs
+                subPath: logs
+              - path: /tmp
+                subPath: tmp
     route:
       app:
         hostnames:
@@ -85,7 +97,8 @@ spec:
                 port: *port
     service:
       app:
-        forceRename: *app
+        forceRename: "{{ .Release.Name }}"
+        primary: true
         ports:
           http:
             port: *port

@@ -1,12 +1,7 @@
 ---
 machine:
-  disks:
-    - device: /dev/disk/by-id/ata-CT4000MX500SSD1_2336E873A309
-      partitions: [{ mountpoint: /var/mnt/extra }]
   install:
     diskSelector:
       serial: S465NB0K748379B
   network:
     hostname: m0.k8s.internal
-  nodeLabels:
-    topology.kubernetes.io/zone: m
