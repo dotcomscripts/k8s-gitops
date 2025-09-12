@@ -4,12 +4,12 @@
     "config:recommended",
     "docker:enableMajor",
     "helpers:pinGitHubActionDigests",
-    "github>dotcomscripts/k8s-gitops//.renovate/allowedVersions.json5",
     "github>dotcomscripts/k8s-gitops//.renovate/autoMerge.json5",
     "github>dotcomscripts/k8s-gitops//.renovate/customManagers.json5",
     "github>dotcomscripts/k8s-gitops//.renovate/grafanaDashboards.json5",
     "github>dotcomscripts/k8s-gitops//.renovate/groups.json5",
     "github>dotcomscripts/k8s-gitops//.renovate/labels.json5",
+    "github>dotcomscripts/k8s-gitops//.renovate/overrides.json5",
     "github>dotcomscripts/k8s-gitops//.renovate/semanticCommits.json5",
     ":automergeBranch",
     ":dependencyDashboard",
@@ -22,12 +22,9 @@
   suppressNotifications: ["prEditedNotification", "prIgnoreNotification"],
   ignorePaths: ["**/resources/**"],
   flux: {
-    managerFilePatterns: ["/(^|/)kubernetes/.+\\.ya?ml$/"]
-  },
-  "helm-values": {
-    managerFilePatterns: ["/(^|/)kubernetes/.+\\.ya?ml$/"]
+    managerFilePatterns: ["/\\.yaml(?:\\.j2)?$/"],
   },
   kubernetes: {
-    managerFilePatterns: ["/(^|/)kubernetes/.+\\.ya?ml$/"]
+    managerFilePatterns: ["/\\.yaml(?:\\.j2)?$/"],
   },
 }

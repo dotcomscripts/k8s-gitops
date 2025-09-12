@@ -10,11 +10,12 @@
   "editor.stickyScroll.enabled": false,
   "explorer.autoReveal": false,
   "files.associations": {
-    "**/*.json5": "json5"
+    "**/*.json5": "json5",
+    "**/*.yaml.j2": "yaml"
   },
   "files.trimTrailingWhitespace": true,
   "material-icon-theme.files.associations": {
-    "helmfile.yaml": "helm",
+    "*.gotmpl": "smarty",
     "kubeconfig": "kubernetes",
     "talosconfig": "kubernetes"
   },
@@ -23,19 +24,20 @@
     ".github/workflows": "ci",
     ".renovate": "robot",
     "bootstrap": "seeders",
+    "bootstrap/helmfile.d": "helm",
     "flux": "pipe",
     "talos": "linux",
     // namespaces
     "actions-runner-system": "github",
     "cert-manager": "guard",
-    "democratic-csi": "dump",
+    "default": "home",
+    "democratic-csi": "base",
     "external-secrets": "secure",
     "flux-system": "pipe",
     "kube-system": "kubernetes",
     "media": "video",
     "observability": "event",
     "networking": "connection",
-    "openebs-system": "base",
     "system-upgrade": "update",
     "volsync-system": "aws"
   },
