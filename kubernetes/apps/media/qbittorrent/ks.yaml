@@ -9,7 +9,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   components:
-    - ../../../../components/nfs-scaler
+    - ../../../../components/keda/nfs-scaler
     - ../../../../components/volsync
   dependsOn:
     - name: democratic-csi
@@ -30,4 +30,3 @@ spec:
     namespace: flux-system
   targetNamespace: *namespace
   timeout: 5m
-  wait: true
