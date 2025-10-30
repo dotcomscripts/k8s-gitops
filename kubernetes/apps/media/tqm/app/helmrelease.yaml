@@ -58,6 +58,6 @@ spec:
       media:
         type: nfs
         server: nas.internal
-        path: /volume1/media
+        path: /volume1/PLEX
         globalMounts:
           - readOnly: true

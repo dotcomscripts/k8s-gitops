@@ -30,10 +30,6 @@ spec:
           auth: [public_v2]
           module: [synology]
           target: nas.internal
-        - name: ups
-          auth: [public_v2]
-          module: [apcups]
-          target: ups.internal
       relabelings:
         - sourceLabels: [__param_target]
           targetLabel: instance
