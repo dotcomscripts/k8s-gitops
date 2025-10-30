@@ -4,18 +4,11 @@ kind: HelmRelease
 metadata:
   name: echo-server
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: app-template
     namespace: flux-system
-  install:
-    remediation:
-      retries: -1
-  upgrade:
-    cleanupOnFail: true
-    remediation:
-      retries: 3
+  interval: 1h
   values:
     controllers:
       echo-server:
@@ -27,7 +20,7 @@ spec:
               repository: ghcr.io/mendhak/http-https-echo
               tag: 38@sha256:c73e039e883944a38e37eaba829eb9a67641cd03eff868827683951feceef96e
             env:
-              PORT: &port 8080
+              HTTP_PORT: &port 80
               LOG_WITHOUT_NEWLINE: true
               LOG_IGNORE_PATH: &path /healthz
               PROMETHEUS_ENABLED: true
@@ -49,18 +42,22 @@ spec:
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
     defaultPodOptions:
+      hostUsers: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 568
-        runAsGroup: 568
+        runAsUser: 1000
+        runAsGroup: 1000
     route:
       app:
+        annotations:
+          gatus.home-operations.com/endpoint: |-
+            url: https://{{ .Release.Name }}.youmans.io/healthz
         hostnames:
           - "{{ .Release.Name }}.youmans.io"
+          - echo.youmans.io
         parentRefs:
-          - name: external
-            namespace: kube-system
-            sectionName: https
+          - name: envoy-external
+            namespace: networking
     service:
       app:
         ports:

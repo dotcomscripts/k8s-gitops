@@ -9,28 +9,19 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   components:
-    - ../../../../components/gatus
     - ../../../../components/volsync
   dependsOn:
     - name: democratic-csi
       namespace: democratic-csi
-    - name: onepassword-store
-      namespace: external-secrets
-    - name: volsync
-      namespace: volsync-system
   interval: 1h
   path: ./kubernetes/apps/media/jellyseerr/app
   postBuild:
     substitute:
       APP: *app
-      GATUS_PATH: /api/v1/status
       VOLSYNC_CAPACITY: 5Gi
   prune: true
-  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
   targetNamespace: *namespace
-  timeout: 5m
-  wait: true

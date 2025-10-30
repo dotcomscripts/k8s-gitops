@@ -4,10 +4,5 @@ kind: Kustomization
 resources:
   - ./receiver
   - ./helmrelease.yaml
+  - ./podmonitor.yaml
   - ./prometheusrule.yaml
-configMapGenerator:
-  - name: flux-instance-values
-    files:
-      - ./helm/values.yaml
-configurations:
-  - ./helm/kustomizeconfig.yaml

@@ -1,0 +1,56 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: victoria-logs
+spec:
+  interval: 15m
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+  ref:
+    tag: 0.11.17
+  url: oci://ghcr.io/victoriametrics/helm-charts/victoria-logs-single
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: victoria-logs
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: victoria-logs
+  interval: 1h
+  values:
+    fullnameOverride: victoria-logs
+    retentionPeriod: 14d
+    server:
+      persistentVolume:
+        enabled: true
+        storageClassName: democratic-csi-hostpath
+        size: 20Gi
+      serviceMonitor:
+        enabled: true
+      route:
+        enabled: true
+        hostnames:
+          - logs.youmans.io
+        parentRefs:
+          - name: envoy-internal
+            namespace: networking
+        extraRules:
+          - filters:
+              - type: RequestRedirect
+                requestRedirect:
+                  path:
+                    type: ReplaceFullPath
+                    replaceFullPath: /select/vmui/
+                  statusCode: 302
+            matches:
+              - path:
+                  type: Exact
+                  value: /
+    dashboards:
+      enabled: true
+      labels:
+        grafana_dashboard: "1"

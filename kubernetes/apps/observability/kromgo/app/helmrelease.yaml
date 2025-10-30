@@ -4,18 +4,11 @@ kind: HelmRelease
 metadata:
   name: kromgo
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: app-template
     namespace: flux-system
-  install:
-    remediation:
-      retries: -1
-  upgrade:
-    cleanupOnFail: true
-    remediation:
-      retries: 3
+  interval: 1h
   values:
     controllers:
       kromgo:
@@ -29,9 +22,9 @@ spec:
               repository: ghcr.io/kashalls/kromgo
               tag: v0.7.2@sha256:85911307e779c799d5a6f37da58281f617030f7fd512910e630d768d2ef2b8e8
             env:
+              HEALTH_PORT: &healthPort 8080
               PROMETHEUS_URL: http://prometheus-operated.observability.svc.cluster.local:9090
-              HEALTH_PORT: &healthPort 8888
-              SERVER_PORT: &port 8080
+              SERVER_PORT: &port 80
             probes:
               liveness: &probes
                 enabled: true
@@ -50,18 +43,33 @@ spec:
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
     defaultPodOptions:
+      hostUsers: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 568
-        runAsGroup: 568
+        runAsUser: 1000
+        runAsGroup: 1000
     persistence:
       config:
         type: configMap
-        name: kromgo-configmap
+        name: "{{ .Release.Name }}-configmap"
         globalMounts:
           - path: /kromgo/config.yaml
             subPath: config.yaml
             readOnly: true
+    route:
+      app:
+        annotations:
+          gatus.home-operations.com/endpoint: |-
+            url: https://{{ .Release.Name }}.youmans.io/talos_version
+        hostnames:
+          - "{{ .Release.Name }}.youmans.io"
+        parentRefs:
+          - name: envoy-external
+            namespace: networking
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: *port
     service:
       app:
         ports:
@@ -69,14 +77,6 @@ spec:
             port: *port
           health:
             port: *healthPort
-    route:
-      app:
-        hostnames:
-          - "{{ .Release.Name }}.youmans.io"
-        parentRefs:
-          - name: external
-            namespace: kube-system
-            sectionName: https
     serviceMonitor:
       app:
         endpoints:

@@ -9,13 +9,13 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   components:
-    - ../../../../components/nfs-scaler
+    - ../../../../components/keda
     - ../../../../components/volsync
   dependsOn:
+    - name: openebs
+      namespace: openebs-system
     - name: democratic-csi
       namespace: democratic-csi
-    - name: volsync
-      namespace: volsync-system
   interval: 1h
   path: ./kubernetes/apps/media/qbittorrent/app
   postBuild:
@@ -23,11 +23,8 @@ spec:
       APP: *app
       VOLSYNC_CAPACITY: 2Gi
   prune: true
-  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
   targetNamespace: *namespace
-  timeout: 5m
-  wait: true

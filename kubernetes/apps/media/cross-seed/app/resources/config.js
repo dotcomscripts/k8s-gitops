@@ -1,7 +1,7 @@
 // Torrent content layout: Original
 // Default Torrent Management Mode: Automatic
 // Default Save Path: /media/downloads/torrents/complete
-// Incomplete Save Path: /media/downloads/torrents/incomplete
+// Incomplete Save Path: /incomplete
 
 module.exports = {
   action: "inject",
@@ -13,7 +13,7 @@ module.exports = {
   outputDir: null,
   port: Number(process.env.CROSS_SEED_PORT),
   skipRecheck: true,
-  torrentClients: ["qbittorrent:http://qbittorrent.media.svc.cluster.local:8080"],
+  torrentClients: ["qbittorrent:http://qbittorrent.media.svc.cluster.local"],
   torznab: [],
   useClientTorrents: true,
 };

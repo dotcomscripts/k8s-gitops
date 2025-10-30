@@ -4,18 +4,11 @@ kind: HelmRelease
 metadata:
   name: &app external-dns-unifi
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: app-template
     namespace: flux-system
-  install:
-    remediation:
-      retries: -1
-  upgrade:
-    cleanupOnFail: true
-    remediation:
-      retries: 3
+  interval: 1h
   values:
     controllers:
       external-dns-unifi:
@@ -30,7 +23,7 @@ spec:
               UNIFI_HOST: https://unifi.internal
             envFrom:
               - secretRef:
-                  name: external-dns-unifi-secret
+                  name: "{{ .Release.Name }}-secret"
             probes:
               liveness:
                 enabled: true
@@ -94,10 +87,11 @@ spec:
         serviceAccount:
           name: *app
     defaultPodOptions:
+      hostUsers: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 568
-        runAsGroup: 568
+        runAsUser: 1000
+        runAsGroup: 1000
     service:
       app:
         ports:

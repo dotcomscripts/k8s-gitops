@@ -4,7 +4,7 @@ kind: OCIRepository
 metadata:
   name: gha-runner-scale-set
 spec:
-  interval: 5m
+  interval: 15m
   layerSelector:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
@@ -17,17 +17,10 @@ kind: HelmRelease
 metadata:
   name: &app k8s-gitops-runner
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: gha-runner-scale-set
-  install:
-    remediation:
-      retries: -1
-  upgrade:
-    cleanupOnFail: true
-    remediation:
-      retries: 3
+  interval: 1h
   values:
     githubConfigUrl: https://github.com/dotcomscripts/k8s-gitops
     githubConfigSecret: k8s-gitops-runner-secret
@@ -62,8 +55,6 @@ spec:
               - mountPath: /var/run/secrets/talos.dev
                 name: talos
                 readOnly: true
-        securityContext:
-          fsGroup: 1001
         serviceAccountName: *app
         volumes:
           - name: talos

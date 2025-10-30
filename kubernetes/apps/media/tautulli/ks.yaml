@@ -13,8 +13,6 @@ spec:
   dependsOn:
     - name: democratic-csi
       namespace: democratic-csi
-    - name: volsync
-      namespace: volsync-system
   interval: 1h
   path: ./kubernetes/apps/media/tautulli/app
   postBuild:
@@ -22,11 +20,8 @@ spec:
       APP: *app
       VOLSYNC_CAPACITY: 5Gi
   prune: true
-  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
   targetNamespace: *namespace
-  timeout: 5m
-  wait: true

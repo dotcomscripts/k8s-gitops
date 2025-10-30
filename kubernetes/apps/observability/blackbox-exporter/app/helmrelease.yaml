@@ -4,7 +4,7 @@ kind: OCIRepository
 metadata:
   name: blackbox-exporter
 spec:
-  interval: 5m
+  interval: 15m
   layerSelector:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
@@ -17,17 +17,10 @@ kind: HelmRelease
 metadata:
   name: &app blackbox-exporter
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: blackbox-exporter
-  install:
-    remediation:
-      retries: -1
-  upgrade:
-    cleanupOnFail: true
-    remediation:
-      retries: 3
+  interval: 1h
   values:
     fullnameOverride: *app
     securityContext:
@@ -40,16 +33,16 @@ spec:
           http:
             valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
             follow_redirects: true
-            preferred_ip_protocol: ipv4
+            preferred_ip_protocol: ip4
         icmp:
           prober: icmp
           timeout: 5s
           icmp:
-            preferred_ip_protocol: ipv4
+            preferred_ip_protocol: ip4
         tcp_connect:
           prober: tcp
           timeout: 5s
           tcp:
-            preferred_ip_protocol: ipv4
+            preferred_ip_protocol: ip4
     serviceMonitor:
       enabled: true

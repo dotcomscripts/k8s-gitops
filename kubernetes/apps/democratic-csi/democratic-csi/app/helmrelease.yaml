@@ -4,7 +4,7 @@ kind: OCIRepository
 metadata:
   name: democratic-csi
 spec:
-  interval: 5m
+  interval: 15m
   layerSelector:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
@@ -17,17 +17,10 @@ kind: HelmRelease
 metadata:
   name: democratic-csi
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: democratic-csi
-  install:
-    remediation:
-      retries: -1
-  upgrade:
-    cleanupOnFail: true
-    remediation:
-      retries: 3
+  interval: 1h
   values:
     csiDriver:
       name: local-hostpath.democratic-csi.k8s.home.arpa
@@ -60,7 +53,7 @@ spec:
       driver:
         extraVolumeMounts:
           - name: local-hostpath
-            mountPath: &path /var/mnt/extra/democratic-csi/local
+            mountPath: &path /var/mnt/local-hostpath
             mountPropagation: Bidirectional
       extraVolumes:
         - name: local-hostpath
