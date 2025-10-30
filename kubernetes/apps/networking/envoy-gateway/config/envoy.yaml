@@ -66,7 +66,7 @@ spec:
       tls:
         certificateRefs:
           - kind: Secret
-            name: k13-dev-tls
+            name: youmans-io-tls
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -102,7 +102,7 @@ spec:
       tls:
         certificateRefs:
           - kind: Secret
-            name: k13-dev-tls
+            name: youmans-io-tls
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: BackendTrafficPolicy
