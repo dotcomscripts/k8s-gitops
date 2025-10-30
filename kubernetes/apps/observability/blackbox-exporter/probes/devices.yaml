@@ -12,7 +12,3 @@ spec:
       static:
         - unifi.internal
         - nas.internal
-        - ups.internal
-        - kvm.internal
-        - pikvm.internal
-        - zigbee-controller.internal
