@@ -41,8 +41,8 @@ spec:
       hostUsers: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
+        runAsUser: 568
+        runAsGroup: 568
     persistence:
       cache:
         type: emptyDir
