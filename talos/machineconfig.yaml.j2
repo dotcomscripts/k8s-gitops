@@ -48,7 +48,7 @@ machine:
         rsize=1048576
         wsize=1048576
   install:
-    image: factory.talos.dev/metal-installer/1870a4bc9362fda89df81278894241c5c9beced58cee7485ee7fd7ebff71d131:v1.11.3
+    image: factory.talos.dev/metal-installer/d21fd7cb0bafe495cde51d2207243c6d5e3e9c9f7664492200385088db481b60:v1.11.3
   kernel:
     modules:
       - name: thunderbolt
@@ -70,26 +70,19 @@ machine:
       - deviceSelector:
           hardwareAddr: "94:c6:91:1e:*"
           driver: e1000e
-        mtu: 9000
+        mtu: 1500
         dhcp: true
   nodeLabels:
     node.kubernetes.io/gpu: "true"
-    topology.kubernetes.io/region: k8s
-    topology.kubernetes.io/zone: {{ 'm' if ENV.MACHINE_TYPE == 'controlplane' else 'w' }}
   sysctls:
     fs.inotify.max_user_watches: 1048576   # Watchdog
     fs.inotify.max_user_instances: 8192    # Watchdog
-    net.core.default_qdisc: fq             # 10Gb/s
-    net.core.rmem_max: 67108864            # 10Gb/s | Cloudflared / QUIC
-    net.core.wmem_max: 67108864            # 10Gb/s | Cloudflared / QUIC
-    net.ipv4.tcp_congestion_control: bbr   # 10Gb/s
+    net.core.default_qdisc: fq             # Congestion Control
+    net.core.rmem_max: 67108864            # Cloudflared / QUIC
+    net.core.wmem_max: 67108864            # Cloudflared / QUIC
+    net.ipv4.tcp_congestion_control: bbr   # Congestion Control
     net.ipv4.tcp_fastopen: 3               # Send and accept data in the opening SYN packet
-    net.ipv4.tcp_mtu_probing: 1            # 10Gb/s | Jumbo frames
-    net.ipv4.tcp_rmem: 4096 87380 33554432 # 10Gb/s
-    net.ipv4.tcp_wmem: 4096 65536 33554432 # 10Gb/s
-    net.ipv4.tcp_window_scaling: 1         # 10Gb/s
-    sunrpc.tcp_slot_table_entries: 128     # 10Gb/s | NFS
-    sunrpc.tcp_max_slot_table_entries: 128 # 10Gb/s | NFS
+    net.ipv4.tcp_mtu_probing: 1            # Jumbo frames
     user.max_user_namespaces: 11255        # User Namespaces
   token: op://K8s/talos/MACHINE_TOKEN
   type: {{ ENV.MACHINE_TYPE }}
@@ -152,23 +145,6 @@ cluster:
     image: registry.k8s.io/kube-proxy:v1.34.1
   secretboxEncryptionSecret: op://K8s/talos/CLUSTER_SECRETBOXENCRYPTIONSECRET
   scheduler:
-    config:
-      apiVersion: kubescheduler.config.k8s.io/v1
-      kind: KubeSchedulerConfiguration
-      profiles:
-        - schedulerName: default-scheduler
-          plugins:
-            score:
-              disabled:
-                - name: ImageLocality
-          pluginConfig:
-            - name: PodTopologySpread
-              args:
-                defaultingType: List
-                defaultConstraints:
-                  - maxSkew: 1
-                    topologyKey: kubernetes.io/hostname
-                    whenUnsatisfiable: ScheduleAnyway
     extraArgs:
       bind-address: 0.0.0.0
     image: registry.k8s.io/kube-scheduler:v1.34.1
