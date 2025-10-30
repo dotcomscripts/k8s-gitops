@@ -5,4 +5,4 @@ namespace: system-upgrade
 components:
   - ../../components/namespace
 resources:
-  - ./tuppr/ks.yaml
+  - ./system-upgrade-controller/ks.yaml

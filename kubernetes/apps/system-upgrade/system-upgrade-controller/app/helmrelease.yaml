@@ -1,0 +1,45 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app system-upgrade-controller
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  interval: 1h
+  values:
+    controllers:
+      system-upgrade-controller:
+        strategy: RollingUpdate
+        replicas: 2
+        containers:
+          app:
+            image:
+              repository: docker.io/rancher/system-upgrade-controller
+              tag: v0.17.0@sha256:7b334b59a48c1653c9f4f18016032255fd874916c78557bc671b7c7877642f1c
+            env:
+              SYSTEM_UPGRADE_CONTROLLER_LEADER_ELECT: true
+              SYSTEM_UPGRADE_CONTROLLER_NAME: *app
+              SYSTEM_UPGRADE_CONTROLLER_NAMESPACE:
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
+              SYSTEM_UPGRADE_CONTROLLER_NODE_NAME:
+                valueFrom:
+                  fieldRef:
+                    fieldPath: spec.nodeName
+              SYSTEM_UPGRADE_JOB_PRIVILEGED: false
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+        serviceAccount:
+          name: *app
+    defaultPodOptions:
+      hostUsers: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
