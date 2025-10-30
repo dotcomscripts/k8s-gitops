@@ -12,8 +12,6 @@ spec:
     - ../../../../components/keda
     - ../../../../components/volsync
   dependsOn:
-    - name: openebs
-      namespace: openebs-system
     - name: democratic-csi
       namespace: democratic-csi
   interval: 1h
