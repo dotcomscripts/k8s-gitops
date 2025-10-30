@@ -29,9 +29,9 @@ spec:
       fsGroupPolicy: File
     storageClasses:
       - name: democratic-csi-hostpath
-        defaultClass: false
+        defaultClass: true
         reclaimPolicy: Delete
-        volumeBindingMode: WaitForFirstConsumer
+        volumeBindingMode: Immediate
         allowVolumeExpansion: false
     volumeSnapshotClasses:
       - name: csi-democratic-csi-hostpath
