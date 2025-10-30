@@ -2,20 +2,13 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app cross-seed
+  name: cross-seed
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: app-template
     namespace: flux-system
-  install:
-    remediation:
-      retries: -1
-  upgrade:
-    cleanupOnFail: true
-    remediation:
-      retries: 3
+  interval: 1h
   values:
     controllers:
       cross-seed:
@@ -28,13 +21,12 @@ spec:
               tag: 6.13.5@sha256:5582e38109145faf6203c844d61d2187368329bde7019a310d3922fef82d8fbf
             args:
               - daemon
-              - -v
             env:
-              CROSS_SEED_PORT: &port 2468
+              CROSS_SEED_PORT: &port 80
               TZ: America/New_York
             envFrom:
               - secretRef:
-                  name: cross-seed-secret
+                  name: "{{ .Release.Name }}-secret"
             probes:
               liveness: &probes
                 enabled: true
@@ -57,15 +49,13 @@ spec:
         runAsNonRoot: true
         runAsUser: 568
         runAsGroup: 568
-        fsGroup: 568
-        fsGroupChangePolicy: OnRootMismatch
         supplementalGroups: [65536]
     persistence:
       config:
-        existingClaim: *app
+        type: emptyDir
       config-file:
         type: configMap
-        name: cross-seed-configmap
+        name: "{{ .Release.Name }}-configmap"
         globalMounts:
           - path: /config/config.js
             subPath: config.js
@@ -77,17 +67,8 @@ spec:
         globalMounts:
           - path: /media/downloads
             subPath: downloads
-      tmpfs:
+      tmp:
         type: emptyDir
-        advancedMounts:
-          cross-seed:
-            app:
-              - path: /config/logs
-                subPath: logs
-              - path: /config/torrent_cache
-                subPath: torrent_cache
-              - path: /tmp
-                subPath: tmp
     service:
       app:
         ports:

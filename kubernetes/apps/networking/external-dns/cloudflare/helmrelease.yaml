@@ -4,18 +4,11 @@ kind: HelmRelease
 metadata:
   name: &app external-dns-cloudflare
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: app-template
     namespace: flux-system
-  install:
-    remediation:
-      retries: -1
-  upgrade:
-    cleanupOnFail: true
-    remediation:
-      retries: 3
+  interval: 1h
   values:
     controllers:
       external-dns-cloudflare:
@@ -31,7 +24,7 @@ spec:
               - --cloudflare-proxied
               - --domain-filter=youmans.io
               - --events
-              - --gateway-name=external
+              - --gateway-name=envoy-external
               - --interval=1m
               - --log-format=text
               - --log-level=info
@@ -44,7 +37,7 @@ spec:
               - --zone-id-filter=$(CF_ZONE_ID)
             envFrom:
               - secretRef:
-                  name: external-dns-cloudflare-secret
+                  name: "{{ .Release.Name }}-secret"
             probes:
               liveness: &probes
                 enabled: true
@@ -65,6 +58,7 @@ spec:
         serviceAccount:
           name: *app
     defaultPodOptions:
+      hostUsers: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 568

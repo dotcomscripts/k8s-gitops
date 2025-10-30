@@ -1,10 +1,8 @@
 ---
-originRequest:
-  originServerName: external.youmans.io
-
 ingress:
-  - hostname: youmans.io
-    service: &service https://cilium-gateway-external.kube-system.svc.cluster.local
   - hostname: "*.youmans.io"
-    service: *service
+    service: https://envoy-external.networking.svc.cluster.local
+    originRequest:
+      http2Origin: true
+      originServerName: external.youmans.io
   - service: http_status:404

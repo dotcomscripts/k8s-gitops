@@ -1,34 +1,41 @@
 ---
 version: v1alpha1
-debug: false
-persist: true
 machine:
-  type: {{ ENV.MACHINE_TYPE }}
-  token: op://K8s/talos/MACHINE_TOKEN
   ca:
     crt: op://K8s/talos/MACHINE_CA_CRT
     {% if ENV.MACHINE_TYPE == 'controlplane' %}
     key: op://K8s/talos/MACHINE_CA_KEY
     {% endif %}
   features:
-    rbac: true
-    stableHostname: true
-    {% if ENV.MACHINE_TYPE == 'controlplane' %}
-    kubernetesTalosAPIAccess:
-      enabled: true
-      allowedRoles: ["os:admin"]
-      allowedKubernetesNamespaces: ["actions-runner-system", "system-upgrade"]
-    {% endif %}
     apidCheckExtKeyUsage: true
     diskQuotaSupport: true
+    hostDNS:
+      enabled: true
+      forwardKubeDNSToHost: false
+      resolveMemberNames: true
     kubePrism:
       enabled: true
       port: 7445
-    hostDNS:
+    {% if ENV.MACHINE_TYPE == 'controlplane' %}
+    kubernetesTalosAPIAccess:
       enabled: true
-      resolveMemberNames: true
-      forwardKubeDNSToHost: false
+      allowedRoles:
+        - os:admin
+      allowedKubernetesNamespaces:
+        - actions-runner-system
+        - system-upgrade
+    {% endif %}
+    rbac: true
+    stableHostname: true
   files:
+    - op: create
+      path: /etc/cri/conf.d/20-customization.part
+      content: |
+        [plugins."io.containerd.cri.v1.images"]
+          discard_unpacked_layers = false
+        [plugins."io.containerd.cri.v1.runtime"]
+          cdi_spec_dirs = ["/var/cdi/static", "/var/cdi/dynamic"]
+          device_ownership_from_security_context = true
     - op: overwrite
       path: /etc/nfsmount.conf
       permissions: 0o644
@@ -36,74 +43,49 @@ machine:
         [ NFSMount_Global_Options ]
         nfsvers=4.1
         hard=True
-        nconnect=16
+        nconnect=8
         noatime=True
         rsize=1048576
         wsize=1048576
-    - op: create
-      path: /usr/local/etc/nfsrahead/nfs.conf
-      content: |
-        [nfsrahead]
-        nfs4=15360
-        default=128
   install:
-    image: factory.talos.dev/metal-installer/{{ ENV.TALOS_SCHEMATIC }}:{{ ENV.TALOS_VERSION }}
+    image: factory.talos.dev/metal-installer/d21fd7cb0bafe495cde51d2207243c6d5e3e9c9f7664492200385088db481b60:v1.11.3
   kernel:
     modules:
       - name: thunderbolt
       - name: thunderbolt_net
   kubelet:
-    image: ghcr.io/siderolabs/kubelet:{{ ENV.KUBERNETES_VERSION }}
-    extraConfig:
-      serializeImagePulls: false
-    extraMounts:
-      - destination: /var/mnt/extra
-        type: bind
-        source: /var/mnt/extra
-        options: ["bind", "rshared", "rw"]
     defaultRuntimeSeccompProfileEnabled: true
-    nodeIP:
-      validSubnets: ["10.0.5.0/24"]
     disableManifestsDirectory: true
+    extraConfig:
+      featureGates:
+        ImageVolume: true
+        ResourceHealthStatus: true
+      serializeImagePulls: false
+    image: ghcr.io/siderolabs/kubelet:v1.34.1
+    nodeIP:
+      validSubnets:
+        - 10.0.5.0/24
   network:
     interfaces:
-      - deviceSelector: { hardwareAddr: "94:c6:91:1e:*", driver: e1000e }
+      - deviceSelector:
+          hardwareAddr: 94:c6:91:1e:*
+          driver: e1000e
         mtu: 1500
         dhcp: true
-        vlans:
-          - { vlanId: 2, dhcp: false, mtu: 1500 }
-          - { vlanId: 99, dhcp: false, mtu: 1500 }
-    nameservers: ["10.0.5.1"]
-    disableSearchDomain: true
   nodeLabels:
-    intel.feature.node.kubernetes.io/gpu: true
-    topology.kubernetes.io/region: k8s
+    node.kubernetes.io/gpu: "true"
   sysctls:
     fs.inotify.max_user_watches: 1048576   # Watchdog
     fs.inotify.max_user_instances: 8192    # Watchdog
-    net.core.default_qdisc: fq             # 10Gb/s
-    net.core.rmem_max: 67108864            # 10Gb/s | Cloudflared / QUIC
-    net.core.wmem_max: 67108864            # 10Gb/s | Cloudflared / QUIC
-    net.ipv4.tcp_congestion_control: bbr   # 10Gb/s
+    net.core.default_qdisc: fq             # Congestion Control
+    net.core.rmem_max: 67108864            # Cloudflared / QUIC
+    net.core.wmem_max: 67108864            # Cloudflared / QUIC
+    net.ipv4.tcp_congestion_control: bbr   # Congestion Control
     net.ipv4.tcp_fastopen: 3               # Send and accept data in the opening SYN packet
-    net.ipv4.tcp_mtu_probing: 1            # 10Gb/s | Jumbo frames
-    net.ipv4.tcp_rmem: 4096 87380 33554432 # 10Gb/s
-    net.ipv4.tcp_wmem: 4096 65536 33554432 # 10Gb/s
-    net.ipv4.tcp_window_scaling: 1         # 10Gb/s
+    net.ipv4.tcp_mtu_probing: 1            # Jumbo frames
     user.max_user_namespaces: 11255        # User Namespaces
-    vm.nr_hugepages: 1024                  # PostgreSQL
-  sysfs:
-    devices.system.cpu.intel_pstate.hwp_dynamic_boost: 1
-    {% for i in range(0, 4) %}
-    devices.system.cpu.cpu{{ i }}.cpufreq.energy_performance_preference: balance_performance
-    {% endfor %}
-  time:
-    disabled: false
-    servers: ["time.cloudflare.com"]
-  udev:
-    rules:
-      - # Intel GPU
-        SUBSYSTEM=="drm", KERNEL=="renderD*", GROUP="44", MODE="0660"
+  token: op://K8s/talos/MACHINE_TOKEN
+  type: {{ ENV.MACHINE_TYPE }}
 cluster:
   ca:
     crt: op://K8s/talos/CLUSTER_CA_CRT
@@ -125,8 +107,10 @@ cluster:
     cni:
       name: none
     dnsDomain: cluster.local
-    podSubnets: ["10.244.0.0/16"]
-    serviceSubnets: ["10.245.0.0/16"]
+    podSubnets:
+      - 10.244.0.0/16
+    serviceSubnets:
+      - 10.245.0.0/16
   secret: op://K8s/talos/CLUSTER_SECRET
   token: op://K8s/talos/CLUSTER_TOKEN
   {% if ENV.MACHINE_TYPE == 'controlplane' %}
@@ -135,54 +119,48 @@ cluster:
     key: op://K8s/talos/CLUSTER_AGGREGATORCA_KEY
   allowSchedulingOnControlPlanes: true
   apiServer:
-    image: registry.k8s.io/kube-apiserver:{{ ENV.KUBERNETES_VERSION }}
+    certSANs:
+      - k8s.internal
+    disablePodSecurityPolicy: true
     extraArgs:
       enable-aggregator-routing: true
-    certSANs: ["k8s.internal"]
-    disablePodSecurityPolicy: true
+      feature-gates: ImageVolume=true,ResourceHealthStatus=true
+    image: registry.k8s.io/kube-apiserver:v1.34.1
   controllerManager:
-    image: registry.k8s.io/kube-controller-manager:{{ ENV.KUBERNETES_VERSION }}
     extraArgs:
       bind-address: 0.0.0.0
+    image: registry.k8s.io/kube-controller-manager:v1.34.1
   coreDNS:
     disabled: true
   etcd:
-    advertisedSubnets: ["10.0.5.0/24"]
+    advertisedSubnets:
+      - 10.0.5.0/24
     ca:
       crt: op://K8s/talos/CLUSTER_ETCD_CA_CRT
       key: op://K8s/talos/CLUSTER_ETCD_CA_KEY
     extraArgs:
       listen-metrics-urls: http://0.0.0.0:2381
-  extraManifests:
-    - # renovate: datasource=github-releases depName=kubernetes-sigs/gateway-api
-      https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/experimental-install.yaml
-    - # renovate: datasource=github-releases depName=prometheus-operator/prometheus-operator
-      https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.86.1/stripped-down-crds.yaml
   proxy:
     disabled: true
-    image: registry.k8s.io/kube-proxy:{{ ENV.KUBERNETES_VERSION }}
+    image: registry.k8s.io/kube-proxy:v1.34.1
   secretboxEncryptionSecret: op://K8s/talos/CLUSTER_SECRETBOXENCRYPTIONSECRET
   scheduler:
-    image: registry.k8s.io/kube-scheduler:{{ ENV.KUBERNETES_VERSION }}
     extraArgs:
       bind-address: 0.0.0.0
-    config:
-      apiVersion: kubescheduler.config.k8s.io/v1
-      kind: KubeSchedulerConfiguration
-      profiles:
-        - schedulerName: default-scheduler
-          plugins:
-            score:
-              disabled:
-                - name: ImageLocality
-          pluginConfig:
-            - name: PodTopologySpread
-              args:
-                defaultingType: List
-                defaultConstraints:
-                  - maxSkew: 1
-                    topologyKey: kubernetes.io/hostname
-                    whenUnsatisfiable: ScheduleAnyway
+    image: registry.k8s.io/kube-scheduler:v1.34.1
   serviceAccount:
     key: op://K8s/talos/CLUSTER_SERVICEACCOUNT_KEY
   {% endif %}
+---
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: local-hostpath
+provisioning:
+  diskSelector:
+    match: disk.model == "CT4000MX500SSD1" && !system_disk
+  minSize: 4.0TB
+---
+apiVersion: v1alpha1
+kind: WatchdogTimerConfig
+device: /dev/watchdog0
+timeout: 5m

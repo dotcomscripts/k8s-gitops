@@ -4,7 +4,7 @@ kind: OCIRepository
 metadata:
   name: snapshot-controller
 spec:
-  interval: 5m
+  interval: 15m
   layerSelector:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
@@ -17,19 +17,10 @@ kind: HelmRelease
 metadata:
   name: snapshot-controller
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: snapshot-controller
-  install:
-    crds: CreateReplace
-    remediation:
-      retries: -1
-  upgrade:
-    cleanupOnFail: true
-    crds: CreateReplace
-    remediation:
-      retries: 3
+  interval: 1h
   values:
     controller:
       replicaCount: 2

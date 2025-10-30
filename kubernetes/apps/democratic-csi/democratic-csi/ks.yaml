@@ -9,16 +9,14 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: snapshot-controller
+    - name: volsync
       namespace: volsync-system
   interval: 1h
   path: ./kubernetes/apps/democratic-csi/democratic-csi/app
   prune: true
-  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
   targetNamespace: *namespace
-  timeout: 5m
   wait: true

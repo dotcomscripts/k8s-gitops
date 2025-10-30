@@ -11,16 +11,11 @@ spec:
   dependsOn:
     - name: democratic-csi
       namespace: democratic-csi
-    - name: onepassword-store
-      namespace: external-secrets
   interval: 1h
   path: ./kubernetes/apps/observability/kube-prometheus-stack/app
   prune: true
-  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
   targetNamespace: *namespace
-  timeout: 5m
-  wait: true

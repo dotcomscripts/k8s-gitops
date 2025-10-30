@@ -2,20 +2,13 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app plex
+  name: plex
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: app-template
     namespace: flux-system
-  install:
-    remediation:
-      retries: -1
-  upgrade:
-    cleanupOnFail: true
-    remediation:
-      retries: 3
+  interval: 1h
   values:
     controllers:
       plex:
@@ -44,28 +37,31 @@ spec:
               startup:
                 enabled: true
                 spec:
-                  failureThreshold: 30
                   periodSeconds: 10
+                  failureThreshold: 30
             resources:
-              limits:
-                gpu.intel.com/i915: 1
+              claims:
+                - name: gpu
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
     defaultPodOptions:
+      resourceClaims:
+        - name: gpu
+          resourceClaimTemplateName: plex
       securityContext:
         runAsNonRoot: true
         runAsUser: 568
         runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
-        supplementalGroups: [44, 65537]
+        supplementalGroups: [65537]
     persistence:
       config:
-        existingClaim: *app
+        existingClaim: "{{ .Release.Name }}"
       config-cache:
-        existingClaim: plex-cache
+        existingClaim: "{{ .Release.Name }}-cache"
         globalMounts:
           - path: /config/Library/Application Support/Plex Media Server/Cache
       media:
@@ -85,22 +81,38 @@ spec:
                 subPath: transcode
               - path: /tmp
                 subPath: tmp
+    rawResources:
+      gpu:
+        apiVersion: resource.k8s.io/v1
+        kind: ResourceClaimTemplate
+        spec:
+          spec:
+            spec:
+              devices:
+                requests:
+                  - name: gpu
+                    exactly:
+                      deviceClassName: gpu.intel.com
     route:
       app:
+        annotations:
+          gatus.home-operations.com/endpoint: |-
+            url: https://{{ .Release.Name }}.youmans.io/identity
         hostnames:
           - "{{ .Release.Name }}.youmans.io"
         parentRefs:
-          - name: external
-            namespace: kube-system
-            sectionName: https
+          - name: envoy-external
+            namespace: networking
         rules:
-          - backendRefs:
+          - # Ref: https://forums.plex.tv/t/external-srt-subtitles-are-not-working-w-reverse-proxy/886540
+            backendRefs:
               - identifier: app
                 port: *port
             filters:
               - type: RequestHeaderModifier
                 requestHeaderModifier:
-                  remove: ["Range"]
+                  remove:
+                    - Range
             matches:
               - path:
                   type: PathPrefix

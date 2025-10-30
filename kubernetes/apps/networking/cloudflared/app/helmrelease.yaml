@@ -4,18 +4,11 @@ kind: HelmRelease
 metadata:
   name: cloudflared
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: app-template
     namespace: flux-system
-  install:
-    remediation:
-      retries: -1
-  upgrade:
-    cleanupOnFail: true
-    remediation:
-      retries: 3
+  interval: 1h
   values:
     controllers:
       cloudflared:
@@ -26,20 +19,19 @@ spec:
         containers:
           app:
             image:
-              repository: docker.io/cloudflare/cloudflared
+              repository: mirror.gcr.io/cloudflare/cloudflared
               tag: 2025.10.0@sha256:396cd2e6f021275ad09969a1b4f1a7e62ca5349fde62781ce082bb2c18105c70
             args:
               - tunnel
               - run
             env:
               NO_AUTOUPDATE: true
-              TUNNEL_METRICS: 0.0.0.0:2000
-              TUNNEL_ORIGIN_ENABLE_HTTP2: true
+              TUNNEL_METRICS: 0.0.0.0:8080
               TUNNEL_POST_QUANTUM: true
               TUNNEL_TRANSPORT_PROTOCOL: quic
             envFrom:
               - secretRef:
-                  name: cloudflared-secret
+                  name: "{{ .Release.Name }}-secret"
             probes:
               liveness: &probes
                 enabled: true
@@ -47,7 +39,7 @@ spec:
                 spec:
                   httpGet:
                     path: /ready
-                    port: &port 2000
+                    port: &port 8080
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
@@ -58,6 +50,7 @@ spec:
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
     defaultPodOptions:
+      hostUsers: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 568
@@ -65,7 +58,7 @@ spec:
     persistence:
       config:
         type: configMap
-        name: cloudflared-configmap
+        name: "{{ .Release.Name }}-configmap"
         globalMounts:
           - path: /etc/cloudflared/config.yaml
             subPath: config.yaml
