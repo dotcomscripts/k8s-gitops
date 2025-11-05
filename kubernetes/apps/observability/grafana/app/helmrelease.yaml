@@ -86,6 +86,9 @@ spec:
         envoy:
           datasource: [{ name: DS_AFRANET_PROMETHEUS, value: Prometheus }]
           url: https://grafana.com/api/dashboards/23239/revisions/1/download
+        etcd:
+          datasource: Prometheus
+          url: https://grafana.com/api/dashboards/22236/revisions/4/download
         kubernetes-api-server:
           datasource: Prometheus
           url: https://grafana.com/api/dashboards/15761/revisions/20/download
@@ -104,6 +107,9 @@ spec:
         kubernetes-pods:
           datasource: Prometheus
           url: https://grafana.com/api/dashboards/15760/revisions/37/download
+        kubernetes-pvc-stats:
+          datasource: [{ name: DS_PROMETHEUS, value: Prometheus }]
+          url: https://grafana.com/api/dashboards/23233/revisions/6/download
         kubernetes-volumes:
           datasource: Prometheus
           url: https://grafana.com/api/dashboards/11454/revisions/14/download
@@ -114,8 +120,11 @@ spec:
           datasource: Prometheus
           url: https://grafana.com/api/dashboards/19105/revisions/8/download
         smartctl-exporter:
-          datasource: [{ name: DS_PROMETHEUS, value: Prometheus }]
-          url: https://grafana.com/api/dashboards/22604/revisions/2/download
+          datasource: [{ name: DS_VICTORIAMETRICS, value: Prometheus }]
+          url: https://grafana.com/api/dashboards/22381/revisions/1/download
+        spegel:
+          datasource: Prometheus
+          url: https://grafana.com/api/dashboards/22104/revisions/1/download
         synology-snmp:
           datasource: [{ name: DS_PROMETHEUS, value: Prometheus }]
           url: https://grafana.com/api/dashboards/18643/revisions/1/download
@@ -134,16 +143,6 @@ spec:
         volsync:
           datasource: [{ name: DS_PROMETHEUS, value: Prometheus }]
           url: https://grafana.com/api/dashboards/21356/revisions/3/download
-    sidecar:
-      dashboards:
-        enabled: true
-        searchNamespace: ALL
-        labelValue: ""
-        label: grafana_dashboard
-        folderAnnotation: grafana_folder
-        provider:
-          disableDelete: true
-          foldersFromFilesStructure: true
     plugins:
       - grafana-clock-panel
       - grafana-piechart-panel

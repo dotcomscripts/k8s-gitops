@@ -92,4 +92,3 @@ spec:
       fullnameOverride: kube-state-metrics
     grafana:
       enabled: false
-      forceDeployDashboards: true
