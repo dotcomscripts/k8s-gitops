@@ -171,9 +171,9 @@ spec:
     - group: gateway.networking.k8s.io
       kind: Gateway
   compression:
+    - type: Zstd
     - type: Brotli
     - type: Gzip
-    - type: Zstd
   connection:
     bufferLimit: 8Mi
   tcpKeepalive: {}

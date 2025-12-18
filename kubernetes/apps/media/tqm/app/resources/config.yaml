@@ -20,22 +20,22 @@ filters:
 
     remove:
       - IsUnregistered()
-      - (
-          HasAnyTag(
-            "site:ANT", "site:AR", "site:AT", "site:FL", "site:FNP",
-            "site:IPT", "site:MLK", "site:TD",
-          ) &&
-          Ratio > 3.0
-        )
-      - (
-          HasAnyTag(
-            "site:ANT", "site:AR", "site:AT", "site:BLU", "site:FL",
-            "site:FNP", "site:HDT", "site:IPT", "site:MLK", "site:PHD",
-            "site:ST", "site:TD", "site:TL"
-          ) &&
-          SeedingDays > 24
-        )
-      - HasAnyTag("not-linked") && SeedingDays > 24
+      - TrackerName in [
+            "lsg.gg", "onlyencodes.cc", "upload.cx"
+        ] && SeedingDays > 90
+      - TrackerName in [
+            "anthelion.me", "blutopia.cc", "blutopia.xyz", "nebulance.io",
+            "privatehd.to", "tleechreload.org", "torrentleech.org"
+        ] && SeedingDays > 60
+      - TrackerName in [
+            "alpharatio.cc", "fearnopeer.com", "hdts-announce.ru", "bgp.technology",
+            "empirehost.me", "stackoverflow.tech", "reelflix.cc", "seedpool.org",
+            "scenetime.com", "jumbohostpro.eu", "td-peers.com"
+        ] && SeedingDays > 30
+      - TrackerName in [
+            "tleechreload.org", "torrentleech.org"
+        ] && SeedingDays > 1
+      - HasAnyTag("not-linked") && SeedingDays > 30
 
     tag:
       - { name: activity:1d,   update: ['LastActivityDays < 7'] }
@@ -49,18 +49,3 @@ filters:
       - { name: added:30d,     update: ['AddedDays >= 30 && AddedDays < 180'] }
       - { name: added:180d,    update: ['AddedDays >= 180'] }
       - { name: not-linked,    update: ['HardlinkedOutsideClient == false && Label in ["sonarr", "radarr"]'] }
-      - { name: site:ANT,      update: ['TrackerName == "anthelion.me"'] }
-      - { name: site:AR,       update: ['TrackerName == "alpharatio.cc"'] }
-      - { name: site:AT,       update: ['TrackerName == "animetorrents.me"'] }
-      - { name: site:BLU,      update: ['TrackerName in ["blutopia.cc", "blutopia.xyz"]'] }
-      - { name: site:FL,       update: ['TrackerName in ["filelist.io", "thefl.org"]'] }
-      - { name: site:FNP,      update: ['TrackerName == "fearnopeer.com"'] }
-      - { name: site:HDT,      update: ['TrackerName == "hdts-announce.ru"'] }
-      - { name: site:IPT,      update: ['TrackerName in ["bgp.technology", "empirehost.me", "stackoverflow.tech"]'] }
-      - { name: site:MLK,      update: ['TrackerName == "milkie.cc"'] }
-      - { name: site:PHD,      update: ['TrackerName == "privatehd.to"'] }
-      - { name: site:ST,       update: ['TrackerName == "scenetime.com"'] }
-      - { name: site:TD,       update: ['TrackerName in ["jumbohostpro.eu", "td-peers.com"]'] }
-      - { name: site:TL,       update: ['TrackerName in ["tleechreload.org", "torrentleech.org"]'] }
-      - { name: tracker-down,  update: ['IsTrackerDown()'] }
-      - { name: unregistered,  update: ['IsUnregistered()'] }
