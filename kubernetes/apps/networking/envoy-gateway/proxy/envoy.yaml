@@ -138,7 +138,6 @@ spec:
   http2:
     initialStreamWindowSize: 4Mi
     initialConnectionWindowSize: 16Mi
-    maxConcurrentStreams: 200
     onInvalidMessage: TerminateStream
   http3: {}
   targetSelectors:
