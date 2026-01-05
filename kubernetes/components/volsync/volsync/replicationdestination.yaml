@@ -10,7 +10,7 @@ spec:
     repository: "${APP}-restic-secret"
     copyMethod: Snapshot
     volumeSnapshotClassName: "${VOLSYNC_SNAPSHOTCLASS:=csi-democratic-csi-hostpath}"
-    cacheStorageClassName: "${VOLSYNC_CACHE_SNAPSHOTCLASS:=democratic-csi-hostpath}"
+    cacheStorageClassName: "${VOLSYNC_CACHE_STORAGECLASS:=democratic-csi-hostpath}"
     cacheAccessModes: ["${VOLSYNC_CACHE_ACCESSMODES:=ReadWriteOnce}"]
     cacheCapacity: "${VOLSYNC_CACHE_CAPACITY:=2Gi}"
     storageClassName: "${VOLSYNC_STORAGECLASS:=democratic-csi-hostpath}"
