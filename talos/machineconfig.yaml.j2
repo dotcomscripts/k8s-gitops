@@ -7,7 +7,6 @@ machine:
     key: op://K8s/talos/MACHINE_CA_KEY
     {% endif %}
   features:
-    apidCheckExtKeyUsage: true
     diskQuotaSupport: true
     hostDNS:
       enabled: true
@@ -25,8 +24,6 @@ machine:
         - actions-runner-system
         - system-upgrade
     {% endif %}
-    rbac: true
-    stableHostname: true
   files:
     - op: create
       path: /etc/cri/conf.d/20-customization.part
@@ -57,20 +54,11 @@ machine:
     defaultRuntimeSeccompProfileEnabled: true
     disableManifestsDirectory: true
     extraConfig:
-      featureGates:
-        ImageVolume: true
       serializeImagePulls: false
     image: ghcr.io/siderolabs/kubelet:v1.35.0
     nodeIP:
       validSubnets:
         - 10.0.5.0/24
-  network:
-    interfaces:
-      - deviceSelector:
-          hardwareAddr: 94:c6:91:1e:*
-          driver: e1000e
-        mtu: 1500
-        dhcp: true
   nodeLabels:
     node.kubernetes.io/gpu: "true"
   sysctls:
@@ -122,10 +110,8 @@ cluster:
   apiServer:
     certSANs:
       - k8s.internal
-    disablePodSecurityPolicy: true
     extraArgs:
       enable-aggregator-routing: true
-      feature-gates: ImageVolume=true
     image: registry.k8s.io/kube-apiserver:v1.35.0
   controllerManager:
     extraArgs:
@@ -152,14 +138,6 @@ cluster:
   serviceAccount:
     key: op://K8s/talos/CLUSTER_SERVICEACCOUNT_KEY
   {% endif %}
----
-apiVersion: v1alpha1
-kind: UserVolumeConfig
-name: local-hostpath
-provisioning:
-  diskSelector:
-    match: disk.model == "CT4000MX500SSD1" && !system_disk
-  minSize: 4TB
 ---
 apiVersion: v1alpha1
 kind: WatchdogTimerConfig

@@ -3,5 +3,15 @@ machine:
   install:
     diskSelector:
       serial: S465NB0K748379B
-  network:
-    hostname: m0.k8s.internal
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+hostname: m0.k8s.internal
+---
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: local-hostpath
+volumeType: disk
+provisioning:
+  diskSelector:
+    match: disk.model == "CT4000MX500SSD1"
