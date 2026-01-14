@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: cloudflared
+  name: agregarr
 spec:
   chartRef:
     kind: OCIRepository
@@ -11,39 +11,33 @@ spec:
   interval: 1h
   values:
     controllers:
-      cloudflared:
-        replicas: 2
-        strategy: RollingUpdate
-        annotations:
-          reloader.stakater.com/auto: "true"
+      agregarr:
         containers:
           app:
             image:
-              repository: mirror.gcr.io/cloudflare/cloudflared
-              tag: 2025.11.1@sha256:89ee50efb1e9cb2ae30281a8a404fed95eb8f02f0a972617526f8c5b417acae2
-            args:
-              - tunnel
-              - run
+              repository: ghcr.io/agregarr/agregarr
+              tag: 2.1.0@sha256:c692e8266562a252d87a1310557505ca971ace5aa846de39b297706c103b155b
             env:
-              NO_AUTOUPDATE: true
-              TUNNEL_METRICS: 0.0.0.0:8080
-              TUNNEL_TRANSPORT_PROTOCOL: http2
-            envFrom:
-              - secretRef:
-                  name: "{{ .Release.Name }}-secret"
+              PORT: &port 80
+              TZ: America/New_York
             probes:
               liveness: &probes
                 enabled: true
                 custom: true
                 spec:
                   httpGet:
-                    path: /ready
-                    port: &port 8080
+                    path: /api/v1/status
+                    port: *port
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
+            resources:
+              requests:
+                cpu: 100m
+              limits:
+                memory: 1Gi
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -53,20 +47,31 @@ spec:
         runAsNonRoot: true
         runAsUser: 1000
         runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
     persistence:
       config:
-        type: configMap
-        name: "{{ .Release.Name }}-configmap"
+        existingClaim: "{{ .Release.Name }}"
         globalMounts:
-          - path: /etc/cloudflared/config.yaml
-            subPath: config.yaml
-            readOnly: true
+          - path: /app/config
+      tmpfs:
+        type: emptyDir
+        advancedMounts:
+          agregarr:
+            app:
+              - path: /app/config/logs
+                subPath: logs
+              - path: /tmp
+                subPath: tmp
+    route:
+      app:
+        hostnames:
+          - "{{ .Release.Name }}.youmans.io"
+        parentRefs:
+          - name: envoy-internal
+            namespace: networking
     service:
       app:
         ports:
           http:
             port: *port
-    serviceMonitor:
-      app:
-        endpoints:
-          - port: http
