@@ -12,7 +12,7 @@ resources:
   - ./karma/ks.yaml
   - ./keda/ks.yaml
   - ./kromgo/ks.yaml
-  # - ./kube-prometheus-stack/ks.yaml
+  - ./kube-prometheus-stack/ks.yaml
   - ./silence-operator/ks.yaml
   - ./smartctl-exporter/ks.yaml
   - ./snmp-exporter/ks.yaml
