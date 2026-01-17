@@ -4,9 +4,13 @@ kind: Certificate
 metadata:
   name: youmans-io
 spec:
-  secretName: youmans-io-tls
+  dnsNames:
+    - youmans.io
+    - "*.youmans.io"
+  duration: 160h
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer
-  commonName: youmans.io
-  dnsNames: ["youmans.io", "*.youmans.io"]
+  secretName: youmans-io-tls
+  usages:
+    - digital signature
