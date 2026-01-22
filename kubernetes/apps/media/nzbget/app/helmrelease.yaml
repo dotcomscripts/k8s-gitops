@@ -52,9 +52,6 @@ spec:
         type: nfs
         server: nas.internal
         path: /volume1/PLEX
-        globalMounts:
-          - path: /media/downloads/nzbs
-            subPath: downloads/nzbs
       tmpfs:
         type: emptyDir
         advancedMounts:

@@ -59,9 +59,6 @@ spec:
         type: nfs
         server: nas.internal
         path: /volume1/PLEX
-        globalMounts:
-          - path: /media/downloads/torrents
-            subPath: downloads/torrents
     route:
       app:
         hostnames:

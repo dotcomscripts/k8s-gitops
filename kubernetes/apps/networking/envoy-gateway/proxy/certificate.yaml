@@ -11,6 +11,10 @@ spec:
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
   secretName: youmans-io-tls
   usages:
     - digital signature
