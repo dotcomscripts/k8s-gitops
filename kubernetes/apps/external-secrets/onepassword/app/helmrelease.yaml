@@ -40,7 +40,7 @@ spec:
                     port: *apiPort
                   initialDelaySeconds: 0
                   periodSeconds: 10
-                  timeoutSeconds: 1
+                  timeoutSeconds: 5
                   failureThreshold: 3
               readiness:
                 enabled: true
@@ -51,7 +51,7 @@ spec:
                     port: *apiPort
                   initialDelaySeconds: 0
                   periodSeconds: 10
-                  timeoutSeconds: 1
+                  timeoutSeconds: 5
                   failureThreshold: 3
             securityContext: &securityContext
               allowPrivilegeEscalation: false
@@ -81,7 +81,7 @@ spec:
                     port: *syncPort
                   initialDelaySeconds: 0
                   periodSeconds: 10
-                  timeoutSeconds: 1
+                  timeoutSeconds: 5
                   failureThreshold: 3
               readiness:
                 enabled: true
@@ -92,7 +92,7 @@ spec:
                     port: *syncPort
                   initialDelaySeconds: 0
                   periodSeconds: 10
-                  timeoutSeconds: 1
+                  timeoutSeconds: 5
                   failureThreshold: 3
             securityContext: *securityContext
     defaultPodOptions:
