@@ -15,8 +15,8 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/home-operations/plex
-              tag: 1.43.0.10492@sha256:8cb062f2b0660bd7811387e6c799da0ce5f18112078fe21485c11adcc83a9c1c
+              repository: ghcr.io/home-operations/plex-next
+              tag: 1.43.0.10492@sha256:c747aa79ba60ab4931e3a555c6d2268d8e3e639044f451b7c173c5bb7e146065
             env:
               PLEX_ADVERTISE_URL: https://{{ .Release.Name }}.youmans.io:443
               PLEX_NO_AUTH_NETWORKS: 10.0.1.0/24
