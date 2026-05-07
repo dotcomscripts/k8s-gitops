@@ -9,12 +9,12 @@ releases:
   - name: envoy-gateway
     namespace: networking
     chart: oci://mirror.gcr.io/envoyproxy/gateway-helm
-    version: v1.7.2
+    version: 1.7.2
 
-  - name: keda
+  - name: grafana-operator
     namespace: observability
-    chart: oci://ghcr.io/home-operations/charts-mirror/keda
-    version: 2.19.0
+    chart: oci://ghcr.io/grafana/helm-charts/grafana-operator
+    version: 5.22.2
 
   - name: kube-prometheus-stack
     namespace: observability

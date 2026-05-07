@@ -20,9 +20,14 @@ spec:
               repository: ghcr.io/autobrr/qui
               tag: v1.18.0@sha256:2e768c8509831afd1f606d27d9aa8e5f3fc722fac4ea88acfdc4fa3b0e9b13ae
             env:
+              QUI__AUTH_DISABLED: true
+              QUI__AUTH_DISABLED_ALLOWED_CIDRS: 0.0.0.0/0
+              QUI__METRICS_ENABLED: true
+              QUI__METRICS_HOST: 0.0.0.0
+              QUI__METRICS_PORT: &metricsPort 8080
+              QUI__I_ACKNOWLEDGE_THIS_IS_A_BAD_IDEA: true
               QUI__HOST: 0.0.0.0
               QUI__PORT: &port 80
-              QUI__LOG_LEVEL: INFO
               TZ: America/New_York
             envFrom:
               - secretRef:
@@ -47,9 +52,9 @@ spec:
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 568
-        runAsGroup: 568
-        fsGroup: 568
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
         supplementalGroups: [65536]
     persistence:
@@ -66,8 +71,18 @@ spec:
         parentRefs:
           - name: envoy-internal
             namespace: networking
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: *port
     service:
       app:
         ports:
           http:
             port: *port
+          metrics:
+            port: *metricsPort
+    serviceMonitor:
+      app:
+        endpoints:
+          - port: metrics

@@ -33,11 +33,6 @@ spec:
                   timeoutSeconds: 5
                   failureThreshold: 3
               readiness: *probes
-            resources:
-              requests:
-                cpu: 100m
-              limits:
-                memory: 1Gi
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true

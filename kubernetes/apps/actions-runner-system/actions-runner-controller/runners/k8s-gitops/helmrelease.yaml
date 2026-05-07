@@ -15,7 +15,7 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app k8s-gitops-runner
+  name: k8s-gitops-runner
 spec:
   chartRef:
     kind: OCIRepository
@@ -57,8 +57,8 @@ spec:
                 readOnly: true
         securityContext:
           fsGroup: 1001
-        serviceAccountName: *app
+        serviceAccountName: k8s-gitops-runner
         volumes:
           - name: talos
             secret:
-              secretName: *app
+              secretName: k8s-gitops-runner

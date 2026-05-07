@@ -5,8 +5,8 @@ metadata:
   name: plex
 spec:
   components:
-    - ../../../../components/keda
     - ../../../../components/volsync
+    - ../../../../components/zeroscaler
   dependsOn:
     - name: intel-gpu-resource-driver
       namespace: kube-system

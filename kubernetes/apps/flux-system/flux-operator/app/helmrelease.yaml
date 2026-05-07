@@ -25,5 +25,19 @@ spec:
     serviceMonitor:
       create: true
     web:
+      config:
+        authentication:
+          type: Anonymous
+          anonymous:
+            username: flux
+            groups:
+              - flux-admin
+      httpRoute:
+        enabled: true
+        hostnames:
+          - flux-operator.youmans.io
+        parentRefs:
+          - name: envoy-internal
+            namespace: networking
       networkPolicy:
         create: false
