@@ -70,6 +70,7 @@ spec:
         enabled: true
         serviceMonitor:
           enabled: true
+      relicas: 1 # One node cluster
     pmtuDiscovery:
       enabled: true
     prometheus:
