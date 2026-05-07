@@ -5,5 +5,4 @@ namespace: volsync-system
 components:
   - ../../components/namespace
 resources:
-  - ./snapshot-controller/ks.yaml
   - ./volsync/ks.yaml
