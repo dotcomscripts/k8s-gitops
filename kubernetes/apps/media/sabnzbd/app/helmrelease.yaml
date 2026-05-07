@@ -57,13 +57,14 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
+        supplementalGroups: [65536]
     persistence:
       config:
         existingClaim: "{{ .Release.Name }}"
       media:
         type: nfs
-        server: tank.internal
-        path: /mnt/tank/media
+        server: nas.internal
+        path: /volume1/PLEX
       tmpfs:
         type: emptyDir
         advancedMounts:
