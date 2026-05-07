@@ -5,8 +5,8 @@ metadata:
   name: radarr
 spec:
   components:
-    - ../../../../components/keda
     - ../../../../components/volsync
+    - ../../../../components/zeroscaler
   dependsOn:
     - name: democratic-csi
       namespace: democratic-csi

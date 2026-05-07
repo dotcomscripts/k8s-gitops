@@ -1,0 +1,14 @@
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: jetkvm
+spec:
+  staticConfigs:
+    - targets:
+        - kvm.internal
+  metricsPath: /metrics
+  relabelings:
+    - action: replace
+      targetLabel: job
+      replacement: jetkvm

@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app external-dns-unifi
+  name: external-dns-unifi
 spec:
   chartRef:
     kind: OCIRepository
@@ -85,12 +85,13 @@ spec:
               readiness: *probes
             securityContext: *securityContext
         serviceAccount:
-          name: *app
+          name: external-dns-unifi
     defaultPodOptions:
+      automountServiceAccountToken: true
       securityContext:
         runAsNonRoot: true
-        runAsUser: 568
-        runAsGroup: 568
+        runAsUser: 1000
+        runAsGroup: 1000
     service:
       app:
         ports:

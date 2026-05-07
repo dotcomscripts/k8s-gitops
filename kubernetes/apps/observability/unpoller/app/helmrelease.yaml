@@ -22,7 +22,7 @@ spec:
             env:
               TZ: America/New_York
               UP_INFLUXDB_DISABLE: true
-              UP_PROMETHEUS_HTTP_LISTEN: 0.0.0.0:8080
+              UP_PROMETHEUS_HTTP_LISTEN: 0.0.0.0:80
               UP_UNIFI_DEFAULT_ROLE: k8s-gitops
               UP_UNIFI_DEFAULT_URL: https://unifi.internal
               UP_UNIFI_DEFAULT_VERIFY_SSL: false
@@ -36,7 +36,7 @@ spec:
                 spec:
                   httpGet:
                     path: /health
-                    port: &port 8080
+                    port: &port 80
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 5
@@ -49,8 +49,8 @@ spec:
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 568
-        runAsGroup: 568
+        runAsUser: 1000
+        runAsGroup: 1000
     service:
       app:
         ports:
@@ -60,5 +60,3 @@ spec:
       app:
         endpoints:
           - port: http
-            interval: 2m # Unifi API only polls at 2m intervals
-            scrapeTimeout: 10s

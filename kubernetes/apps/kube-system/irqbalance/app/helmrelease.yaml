@@ -18,11 +18,6 @@ spec:
             image:
               repository: ghcr.io/home-operations/irqbalance
               tag: 1.9.4@sha256:6cc768c3f074c221412d56b341a19c8432f9a6d76eda0b346285f9c5e2d3b2cc
-            resources:
-              requests:
-                cpu: 10m
-              limits:
-                memory: 32Mi
             securityContext:
               privileged: true
     defaultPodOptions:

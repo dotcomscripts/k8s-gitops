@@ -15,7 +15,7 @@ spec:
         type: cronjob
         cronjob:
           schedule: "@daily"
-          timeZone: &timeZone America/New_York
+          timeZone: America/New_York
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
           failedJobsHistory: 1
@@ -27,7 +27,7 @@ spec:
             args:
               - sync
             env:
-              TZ: *timeZone
+              RECYCLARR_DATA_DIR: /tmp
             envFrom:
               - secretRef:
                   name: "{{ .Release.Name }}-secret"
@@ -38,9 +38,9 @@ spec:
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 568
-        runAsGroup: 568
-        fsGroup: 568
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
     persistence:
       config:

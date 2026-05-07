@@ -52,18 +52,14 @@ spec:
           resourceClaimTemplateName: plex
       securityContext:
         runAsNonRoot: true
-        runAsUser: 568
-        runAsGroup: 568
-        fsGroup: 568
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
-        supplementalGroups: [65537]
+        supplementalGroups: [65536]
     persistence:
       config:
         existingClaim: "{{ .Release.Name }}"
-      config-cache:
-        existingClaim: "{{ .Release.Name }}-cache"
-        globalMounts:
-          - path: /config/Library/Application Support/Plex Media Server/Cache
       media:
         type: nfs
         server: nas.internal
@@ -81,18 +77,6 @@ spec:
                 subPath: transcode
               - path: /tmp
                 subPath: tmp
-    rawResources:
-      gpu:
-        apiVersion: resource.k8s.io/v1
-        kind: ResourceClaimTemplate
-        spec:
-          spec:
-            spec:
-              devices:
-                requests:
-                  - name: gpu
-                    exactly:
-                      deviceClassName: gpu.intel.com
     route:
       app:
         annotations:

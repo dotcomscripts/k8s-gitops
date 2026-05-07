@@ -31,7 +31,6 @@ machine:
         [plugins."io.containerd.cri.v1.images"]
           discard_unpacked_layers = false
         [plugins."io.containerd.cri.v1.runtime"]
-          cdi_spec_dirs = ["/var/cdi/static", "/var/cdi/dynamic"]
           device_ownership_from_security_context = true
     - op: overwrite
       path: /etc/nfsmount.conf
@@ -45,7 +44,7 @@ machine:
         rsize=1048576
         wsize=1048576
   install:
-    image: factory.talos.dev/metal-installer/b112719ff4263a5b87888cc583896ae4df6bdc915fa4fe539a624d606a671dd2:v1.13.0
+    image: factory.talos.dev/metal-installer/e4de887f08c345fbd8b47e5f0eff611b86ed925c3ab3a731744cdf57b7dbe462:v1.13.0
   kernel:
     modules:
       - name: thunderbolt
@@ -112,10 +111,12 @@ cluster:
       - k8s.internal
     extraArgs:
       enable-aggregator-routing: true
+      feature-gates: HPAScaleToZero=true
     image: registry.k8s.io/kube-apiserver:v1.36.0
   controllerManager:
     extraArgs:
       bind-address: 0.0.0.0
+      feature-gates: HPAScaleToZero=true
     image: registry.k8s.io/kube-controller-manager:v1.36.0
   coreDNS:
     disabled: true
