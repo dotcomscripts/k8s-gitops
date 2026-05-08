@@ -6,7 +6,7 @@ metadata:
 spec:
   trigger:
     manual: restore-once
-  restic:
+  kopia:
     accessModes:
       - ${VOLSYNC_ACCESSMODES:=ReadWriteOnce}
     cacheAccessModes:
@@ -23,5 +23,7 @@ spec:
       runAsGroup: ${VOLSYNC_PGID:=1000}
       fsGroup: ${VOLSYNC_PGID:=1000}
     repository: ${APP}-volsync-secret
+    sourceIdentity:
+      sourceName: ${APP}
     storageClassName: ${VOLSYNC_STORAGECLASS:=democratic-csi-hostpath}
     volumeSnapshotClassName: ${VOLSYNC_SNAPSHOTCLASS:=csi-democratic-csi-hostpath}
