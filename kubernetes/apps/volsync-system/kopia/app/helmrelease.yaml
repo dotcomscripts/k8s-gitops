@@ -21,11 +21,12 @@ spec:
               tag: 0.22.3@sha256:17ab64542280197a5368247deaefadc3e3bbe15714ab666c2455a06824e86efd
             args:
               - --refresh-interval=5m
+              - --readonly
               - --without-password
             env:
               KOPIA_WEB_ENABLED: true
               KOPIA_WEB_PORT: &port 80
-              TZ: America/Chicago
+              TZ: America/New_York
             probes:
               liveness: &probes
                 enabled: true
@@ -39,11 +40,6 @@ spec:
                   timeoutSeconds: 5
                   failureThreshold: 3
               readiness: *probes
-            resources:
-              requests:
-                cpu: 10m
-              limits:
-                memory: 1Gi
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -76,7 +72,7 @@ spec:
     route:
       app:
         hostnames:
-          - "{{ .Release.Name }}.k13.dev"
+          - "{{ .Release.Name }}.youmans.io"
         parentRefs:
           - name: envoy-internal
             namespace: networking
