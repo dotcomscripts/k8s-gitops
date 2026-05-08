@@ -6,20 +6,21 @@ metadata:
 spec:
   sourcePVC: ${APP}
   trigger:
-    schedule: 15 */8 * * *
-  restic:
+    schedule: 0 * * * *
+  kopia:
     accessModes:
       - ${VOLSYNC_SNAP_ACCESSMODES:=ReadWriteOnce}
     cacheAccessModes:
       - ${VOLSYNC_CACHE_ACCESSMODES:=ReadWriteOnce}
-    cacheCapacity: ${VOLSYNC_CACHE_CAPACITY:=5Gi}
+    cacheCapacity: ${VOLSYNC_CAPACITY:=5Gi}
     cacheStorageClassName: ${VOLSYNC_CACHE_STORAGECLASS:=democratic-csi-hostpath}
-    copyMethod: ${VOLSYNC_COPYMETHOD:=Snapshot}
+    compression: zstd-fastest
+    copyMethod: Snapshot
     moverSecurityContext:
       runAsUser: ${VOLSYNC_PUID:=1000}
       runAsGroup: ${VOLSYNC_PGID:=1000}
       fsGroup: ${VOLSYNC_PGID:=1000}
-    pruneIntervalDays: 14
+    parallelism: 2
     repository: ${APP}-volsync-secret
     retain:
       hourly: 24
