@@ -1,0 +1,11 @@
+---
+customization:
+  extraKernelArgs:
+    - intel_iommu=on                                  # PCI Passthrough
+    - iommu=pt                                        # PCI Passthrough
+    - mitigations=off                                 # Less security, faster puter
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/i915                               # Intel GPU
+      - siderolabs/intel-ucode                        # Intel CPU Microcode
+      - siderolabs/thunderbolt                        # Thunderbolt Support

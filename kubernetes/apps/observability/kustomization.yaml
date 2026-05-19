@@ -1,13 +1,15 @@
 ---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: observability
 components:
+  - ../../components/alerts
   - ../../components/namespace
 resources:
   - ./blackbox-exporter/ks.yaml
   - ./gatus/ks.yaml
-  - ./grafana/ks.yaml
+  - ./grafana-operator/ks.yaml
   - ./karma/ks.yaml
   - ./kromgo/ks.yaml
   - ./kube-prometheus-stack/ks.yaml

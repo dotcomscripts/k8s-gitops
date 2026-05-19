@@ -1,0 +1,18 @@
+---
+machine:
+  type: controlplane
+  install:
+    diskSelector:
+      serial: S465NB0K748379B
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+hostname: m0
+---
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: local-hostpath
+volumeType: disk
+provisioning:
+  diskSelector:
+    match: disk.model == "CT4000MX500SSD1"
