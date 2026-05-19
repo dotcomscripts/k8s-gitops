@@ -1,12 +1,13 @@
 ---
 machine:
+  type: controlplane
   install:
     diskSelector:
       serial: S465NB0K748379B
 ---
 apiVersion: v1alpha1
 kind: HostnameConfig
-hostname: m0.k8s.internal
+hostname: m0
 ---
 apiVersion: v1alpha1
 kind: UserVolumeConfig
