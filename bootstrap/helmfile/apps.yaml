@@ -1,0 +1,90 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/helmfile
+
+# Bootstraps core applications that provide a minimal runtime base for the
+# cluster. These releases are installed first so the cluster has the resources
+# Flux needs before its own reconciliation begins.
+#
+# After this bootstrap phase, Flux is ready to take over management of the
+# application stack and continue reconciling downstream state.
+
+bases:
+  - default.yaml
+
+helmDefaults:
+  cleanupOnFail: true
+  forceConflicts: true
+  wait: true
+  waitForJobs: true
+
+releases:
+  - name: cilium
+    namespace: kube-system
+    hooks:
+      - # Advertise Kubernetes VIP
+        command: kubectl
+        args:
+          - apply
+          - --field-manager=kustomize-controller
+          - --namespace={{ .Release.Namespace }}
+          - --kustomize=../../kubernetes/apps/{{ .Release.Namespace }}/{{ .Release.Name }}/config
+          - --server-side
+        events:
+          - postsync
+        showlogs: true
+    inherit:
+      - template: default
+
+  - name: coredns
+    namespace: kube-system
+    inherit:
+      - template: default
+    needs:
+      - kube-system/cilium
+
+  - name: cert-manager
+    namespace: cert-manager
+    inherit:
+      - template: default
+    needs:
+      - kube-system/coredns
+
+  - name: external-secrets
+    namespace: external-secrets
+    inherit:
+      - template: default
+    needs:
+      - cert-manager/cert-manager
+
+  - name: onepassword-connect
+    namespace: external-secrets
+    hooks:
+      - # Apply 1Password Connect Store
+        command: kubectl
+        args:
+          - apply
+          - --field-manager=kustomize-controller
+          - --namespace={{ .Release.Namespace }}
+          - --kustomize=../../kubernetes/apps/{{ .Release.Namespace }}/{{ .Release.Name }}/store
+          - --server-side
+        events:
+          - postsync
+        showlogs: true
+    inherit:
+      - template: default
+    needs:
+      - external-secrets/external-secrets
+
+  - name: flux-operator
+    namespace: flux-system
+    inherit:
+      - template: default
+    needs:
+      - external-secrets/onepassword-connect
+
+  - name: flux-instance
+    namespace: flux-system
+    inherit:
+      - template: default
+    needs:
+      - flux-system/flux-operator
