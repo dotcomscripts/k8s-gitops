@@ -33,6 +33,7 @@
     // namespaces
     "actions-runner-system": "github",
     "cert-manager": "guard",
+    "democratic-csi": "dump",
     "default": "home",
     "external-secrets": "secure",
     "flux-system": "pipe",
@@ -40,8 +41,6 @@
     "media": "video",
     "networking": "connection",
     "observability": "event",
-    "openebs-system": "base",
-    "rook-ceph": "dump",
     "system-upgrade": "update",
     "volsync-system": "aws"
   },
