@@ -4,7 +4,7 @@
     "config:recommended",
     "docker:enableMajor",
     "helpers:pinGitHubActionDigests",
-    "github>home-operations/renovate-presets#1.1.0",
+    "github>home-operations/renovate-presets#1.3.0",
     "github>dotcomscripts/k8s-gitops//.renovate/autoMerge.json5",
     "github>dotcomscripts/k8s-gitops//.renovate/groups.json5",
     "github>dotcomscripts/k8s-gitops//.renovate/labels.json5",
