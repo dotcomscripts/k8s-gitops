@@ -26,7 +26,6 @@ _... managed with [Flux](https://github.com/fluxcd/flux2), [Renovate](https://gi
 [![Pods](https://kromgo.youmans.io/badges/cluster_pod_count)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
 [![CPU](https://kromgo.youmans.io/badges/cluster_cpu_usage)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
 [![Memory](https://kromgo.youmans.io/badges/cluster_memory_usage)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
-[![Power](https://kromgo.youmans.io/badges/cluster_power_usage)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
 [![Alerts](https://kromgo.youmans.io/badges/cluster_alert_count)](https://github.com/home-operations/kromgo)
 
 </div>
