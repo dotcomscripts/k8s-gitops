@@ -1,5 +1,5 @@
 ---
-# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/helm.toolkit.fluxcd.io/helmrelease_v2.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -18,8 +18,8 @@ spec:
         initContainers:
           webhook:
             image:
-              repository: ghcr.io/kashalls/external-dns-unifi-webhook
-              tag: v0.9.0@sha256:22f4106f44a0b9ac3c97cf29bbfef93026c1164492152dc797a1d6dc86ddfbb5
+              repository: ghcr.io/home-operations/external-dns-unifi-webhook
+              tag: 0.10.2@sha256:1f51f841e217d8bc6481655481ce82e0f0be70ad359c23d7d866d53a51d87fa9
             env:
               UNIFI_HOST: https://unifi.internal
             envFrom:
@@ -70,7 +70,7 @@ spec:
               - --source=gateway-httproute
               - --source=service
               - --txt-owner-id=k8s
-              - --txt-prefix=k8s.
+              - --txt-prefix=k8s.%{record_type}-
             probes:
               liveness: &probes
                 enabled: true
