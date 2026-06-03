@@ -12,7 +12,7 @@
   "explorer.autoReveal": true,
   "files.associations": {
     "**/*.json5": "json5",
-    "**/*.just": "just",
+    "**/*.just": "just"
   },
   "files.trimTrailingWhitespace": true,
   "material-icon-theme.files.associations": {
@@ -33,8 +33,7 @@
     // namespaces
     "actions-runner-system": "github",
     "cert-manager": "guard",
-    "democratic-csi": "dump",
-    "default": "home",
+    "democratic-csi": "base",
     "external-secrets": "secure",
     "flux-system": "pipe",
     "kube-system": "kubernetes",
@@ -47,9 +46,7 @@
   "terminal.integrated.fontSize": 14,
   "vs-kubernetes": {
     "vs-kubernetes.kubeconfig": "./kubernetes/kubeconfig",
-    "vs-kubernetes.knownKubeconfigs": [
-      "./kubernetes/kubeconfig"
-    ]
+    "vs-kubernetes.knownKubeconfigs": ["./kubernetes/kubeconfig"]
   },
   "window.zoomLevel": 0,
   "yaml.schemaStore.enable": true,
@@ -60,6 +57,18 @@
     "editor.defaultFormatter": "nefrob.vscode-just-syntax"
   },
   "[yaml]": {
-    "editor.defaultFormatter": "bluebrown.yamlfmt"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
+  "[json]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[json5]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  }
 }
