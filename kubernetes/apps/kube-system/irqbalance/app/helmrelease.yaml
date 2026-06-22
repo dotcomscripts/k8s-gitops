@@ -18,7 +18,7 @@ spec:
           app:
             image:
               repository: ghcr.io/home-operations/irqbalance
-              tag: 1.9.5@sha256:0c79f820f7d30328fc161c1543fdee74df3f94b302249c086f123ea0b63211de
+              tag: 1.9.5@sha256:a6d8c6f69c56f653022861ae7b1813cf41751dc5289a35d99075c9d113c29817
             securityContext:
               privileged: true
     defaultPodOptions:
