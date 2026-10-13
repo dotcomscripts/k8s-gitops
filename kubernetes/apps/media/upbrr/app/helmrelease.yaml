@@ -3,41 +3,46 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: echo-server
+  name: upbrr
 spec:
   chartRef:
     kind: OCIRepository
-    name: app-template
-    namespace: flux-system
+    name: upbrr
   interval: 1h
   values:
     controllers:
-      echo-server:
-        replicas: 2
-        strategy: RollingUpdate
+      upbrr:
         containers:
           app:
             image:
-              repository: ghcr.io/mendhak/http-https-echo
-              tag: 42@sha256:a265f55c86cb3baead76fdf379dc8e9e6440ed121874e101e60b833e05bce8d4
+              repository: ghcr.io/autobrr/upbrr
+              tag: 0.4.0@sha256:cfd21650a797acc6a303a34f7fc6c004a03c9cbd1c364016bc89e7105126c937
             env:
-              HTTP_PORT: &port 80
-              LOG_WITHOUT_NEWLINE: true
-              LOG_IGNORE_PATH: &path /healthz
-              PROMETHEUS_ENABLED: true
+              UPBRR_WEB_PORT: &port 80
+              TZ: America/New_York
             probes:
               liveness: &probes
                 enabled: true
                 custom: true
                 spec:
                   httpGet:
-                    path: *path
+                    path: /api/auth/status
                     port: *port
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 5
                   failureThreshold: 3
               readiness: *probes
+              startup:
+                enabled: true
+                spec:
+                  periodSeconds: 10
+                  failureThreshold: 30
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 4Gi
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -47,23 +52,33 @@ spec:
         runAsNonRoot: true
         runAsUser: 1000
         runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+    persistence:
+      config:
+        existingClaim: "{{ .Release.Name }}"
+      media:
+        type: nfs
+        server: nas.internal
+        path: /volume1/PLEX
+      tmpfs:
+        type: emptyDir
+        advancedMounts:
+          upbrr:
+            app:
+              - path: /config/logs
+                subPath: logs
+              - path: /tmp
+                subPath: tmp
     route:
       app:
-        annotations:
-          gatus.home-operations.com/endpoint: |-
-            url: https://{{ .Release.Name }}.youmans.io/healthz
         hostnames:
           - "{{ .Release.Name }}.youmans.io"
-          - echo.youmans.io
         parentRefs:
-          - name: envoy-external
+          - name: envoy-internal
             namespace: networking
     service:
       app:
         ports:
           http:
             port: *port
-    serviceMonitor:
-      app:
-        endpoints:
-          - port: http

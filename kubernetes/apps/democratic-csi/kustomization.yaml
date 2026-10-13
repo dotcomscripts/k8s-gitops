@@ -5,6 +5,6 @@ kind: Kustomization
 namespace: democratic-csi
 components:
   - ../../components/alerts
-  - ../../components/namespace
 resources:
+  - ./namespace.yaml
   - ./democratic-csi/ks.yaml

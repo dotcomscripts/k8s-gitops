@@ -7,8 +7,7 @@ metadata:
 spec:
   chartRef:
     kind: OCIRepository
-    name: app-template
-    namespace: flux-system
+    name: kromgo
   interval: 1h
   values:
     controllers:
@@ -23,22 +22,32 @@ spec:
               repository: ghcr.io/home-operations/kromgo
               tag: 0.16.1@sha256:ad39dd32da600ea261112e7a098345d474d48c997790b0373eb651c66e490844
             env:
-              HEALTH_PORT: &healthPort 8080
-              PROMETHEUS_URL: http://prometheus-operated.observability.svc.cluster.local:9090
-              SERVER_PORT: &port 80
+              KROMGO_METRICS_PORT: &metricsPort 8080
+              KROMGO_PROMETHEUS_URL: http://prometheus-operated.observability.svc.cluster.local:9090
+              KROMGO_SERVER_PORT: &port 80
             probes:
-              liveness: &probes
+              liveness:
                 enabled: true
                 custom: true
                 spec:
                   httpGet:
-                    path: /-/ready
-                    port: *healthPort
+                    path: /healthz
+                    port: *port
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 5
                   failureThreshold: 3
-              readiness: *probes
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /readyz
+                    port: *port
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 3
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -58,6 +67,9 @@ spec:
             readOnly: true
     route:
       app:
+        annotations:
+          gatus.home-operations.com/endpoint: |-
+            path: /healthz
         hostnames:
           - "{{ .Release.Name }}.youmans.io"
         parentRefs:
@@ -72,9 +84,9 @@ spec:
         ports:
           http:
             port: *port
-          health:
-            port: *healthPort
+          metrics:
+            port: *metricsPort
     serviceMonitor:
       app:
         endpoints:
-          - port: health
+          - port: metrics

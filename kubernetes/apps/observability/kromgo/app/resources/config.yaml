@@ -1,5 +1,5 @@
+---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/home-operations/kromgo/main/config.schema.json
-
 badges:
   - title: Talos
     id: talos_version
@@ -41,6 +41,12 @@ badges:
     query: round(sum(node_memory_MemTotal_bytes{pod!=""} - node_memory_MemAvailable_bytes{pod!=""}) / sum(node_memory_MemTotal_bytes{pod!=""}) * 100, 0.1)
     valueExpr: string(result) + "%"
     colorExpr: 'colorScale(result, [35.0, 75.0], ["green", "orange", "red"])'
+
+  - title: Power
+    id: cluster_power_usage
+    query: avg(upsAdvOutputActivePower)
+    valueExpr: humanizeCommas(math.round(result)) + "w"
+    colorExpr: 'colorScale(result, [400.0, 750.0], ["green", "orange", "red"])'
 
   - title: Age
     id: cluster_birth_age
