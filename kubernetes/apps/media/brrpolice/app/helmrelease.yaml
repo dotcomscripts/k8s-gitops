@@ -16,7 +16,7 @@ spec:
           app:
             image:
               repository: ghcr.io/zariel/brrpolice
-              tag: v0.16.0@sha256:0584b0ebefe211a89f3d8f5b039d3056b94a5ae26392e4ac55e68f3adb2e3f70
+              tag: v0.16.3@sha256:91a55aa984698bc780a6514961bd38bc423c809999a17c48f9a83d484632ad2f
             env:
               BRRPOLICE_HTTP__PORT: &port 80
               BRRPOLICE_LOGGING__LEVEL: info
